@@ -45,9 +45,19 @@ class TradingEnv:
         self.index += 1
         self.done = self.index >= len(self.features) - 1
         current_value = self._portfolio_value()
-        volatility = float(self.features["log_return"].iloc[max(0, self.index - 5) : self.index].std())
-        reward = self.reward_function.compute(previous_value, current_value, traded, volatility) - penalty
-        return self._state(), reward, self.done, {"portfolio_value": current_value, "traded": float(traded)}
+        volatility = float(
+            self.features["log_return"].iloc[max(0, self.index - 5) : self.index].std()
+        )
+        reward = (
+            self.reward_function.compute(previous_value, current_value, traded, volatility)
+            - penalty
+        )
+        return (
+            self._state(),
+            reward,
+            self.done,
+            {"portfolio_value": current_value, "traded": float(traded)},
+        )
 
     def _portfolio_value(self) -> float:
         price = float(self.prices.iloc[min(self.index, len(self.prices) - 1)])
@@ -57,5 +67,7 @@ class TradingEnv:
         window = self.features.iloc[self.index - self.window_size : self.index].copy()
         price = float(self.prices.iloc[self.index])
         window.loc[:, "position"] = 1.0 if self.shares > 0 else 0.0
-        window.loc[:, "unrealised_pnl"] = 0.0 if self.shares == 0 else (price - self.entry_price) / self.entry_price
+        window.loc[:, "unrealised_pnl"] = (
+            0.0 if self.shares == 0 else (price - self.entry_price) / self.entry_price
+        )
         return window[FEATURE_COLUMNS].to_numpy(dtype=np.float32)

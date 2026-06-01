@@ -28,16 +28,24 @@ class TradingSDK:
         engineer = FeatureEngineer(feature_cfg["window_size"])
         features = engineer.transform(raw)
         split = self.config["split"]
-        return raw, features, engineer.chronological_split(features, split["train"], split["validation"])
+        return (
+            raw,
+            features,
+            engineer.chronological_split(features, split["train"], split["validation"]),
+        )
 
     def make_env(self, features, raw, reward_mode: str = "risk_adjusted") -> TradingEnv:
         env_cfg = self.config["environment"]
         reward_cfg = self.config["reward"] if reward_mode == "risk_adjusted" else {}
         reward = RewardFunction(**reward_cfg)
         aligned_prices = raw.loc[features.index, "Close"]
-        return TradingEnv(features, aligned_prices, self.config["features"]["window_size"], reward, **env_cfg)
+        return TradingEnv(
+            features, aligned_prices, self.config["features"]["window_size"], reward, **env_cfg
+        )
 
-    def train(self, ticker: str | None = None, reward_mode: str = "risk_adjusted") -> TrainingResult:
+    def train(
+        self, ticker: str | None = None, reward_mode: str = "risk_adjusted"
+    ) -> TrainingResult:
         raw, features, _splits = self.prepare_data(ticker)
         env = self.make_env(features, raw, reward_mode)
         checkpoint = Path(self.config["training"]["checkpoint_path"])
@@ -58,7 +66,9 @@ class TradingSDK:
         return InferenceService.predict(model, env.reset())
 
     def _load_model(self) -> DuelingDQNNetwork:
-        model = DuelingDQNNetwork(self.config["features"]["window_size"], self.config["features"]["feature_count"])
+        model = DuelingDQNNetwork(
+            self.config["features"]["window_size"], self.config["features"]["feature_count"]
+        )
         checkpoint = Path(self.config["training"]["checkpoint_path"])
         if checkpoint.exists():
             state = torch.load(checkpoint, map_location="cpu")

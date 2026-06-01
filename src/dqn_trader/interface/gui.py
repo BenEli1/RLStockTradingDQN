@@ -23,10 +23,14 @@ class TraderApp(tk.Tk):
         ttk.Label(frame, text="Ticker").grid(row=0, column=0, sticky="w")
         ttk.Entry(frame, textvariable=self.ticker, width=12).grid(row=0, column=1, sticky="w")
         ttk.Button(frame, text="Prepare Data", command=self._prepare).grid(row=1, column=0, pady=8)
-        ttk.Button(frame, text="Train Dueling DQN", command=self._train).grid(row=1, column=1, pady=8)
+        ttk.Button(frame, text="Train Dueling DQN", command=self._train).grid(
+            row=1, column=1, pady=8
+        )
         ttk.Button(frame, text="Backtest", command=self._backtest).grid(row=1, column=2, pady=8)
         ttk.Button(frame, text="Predict", command=self._predict).grid(row=1, column=3, pady=8)
-        ttk.Label(frame, textvariable=self.output, wraplength=660).grid(row=2, column=0, columnspan=4, sticky="w")
+        ttk.Label(frame, textvariable=self.output, wraplength=660).grid(
+            row=2, column=0, columnspan=4, sticky="w"
+        )
 
     def _prepare(self) -> None:
         self._run(lambda: self.sdk.prepare_data(self.ticker.get()), "Data prepared")

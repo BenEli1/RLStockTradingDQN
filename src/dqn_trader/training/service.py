@@ -55,12 +55,20 @@ class TrainingService:
             if total_reward > best_reward:
                 best_reward = total_reward
                 checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-                torch.save({"model_state": policy.state_dict(), "reward": total_reward}, checkpoint_path)
+                torch.save(
+                    {"model_state": policy.state_dict(), "reward": total_reward}, checkpoint_path
+                )
             rewards.append(total_reward)
         self._write_metrics(checkpoint_path.parent, rewards, losses)
         return TrainingResult(rewards, losses, checkpoint_path)
 
-    def _learn(self, policy: nn.Module, target: nn.Module, optimizer: torch.optim.Optimizer, buffer: ReplayBuffer) -> float:
+    def _learn(
+        self,
+        policy: nn.Module,
+        target: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        buffer: ReplayBuffer,
+    ) -> float:
         batch = buffer.sample(self.config["batch_size"])
         states = torch.tensor(np.stack([t.state for t in batch]), dtype=torch.float32)
         actions = torch.tensor([t.action for t in batch], dtype=torch.long).unsqueeze(1)
@@ -69,7 +77,9 @@ class TrainingService:
         dones = torch.tensor([t.done for t in batch], dtype=torch.float32)
         q_values = policy(states).gather(1, actions).squeeze(1)
         with torch.no_grad():
-            targets = rewards + self.config["gamma"] * target(next_states).max(1).values * (1 - dones)
+            targets = rewards + self.config["gamma"] * target(next_states).max(1).values * (
+                1 - dones
+            )
         loss = nn.functional.huber_loss(q_values, targets)
         optimizer.zero_grad()
         loss.backward()

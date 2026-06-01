@@ -14,4 +14,7 @@ def test_inference_and_backtest(raw_frame):
     assert action in {0, 1, 2}
     assert len(q_values) == 3
     assert result.equity_curve
+    assert result.buy_hold_curve
+    assert isinstance(result.sharpe_ratio, float)
+    assert result.trade_count >= 0
     assert -1 <= result.max_drawdown <= 0

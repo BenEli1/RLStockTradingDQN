@@ -5,6 +5,7 @@ def test_features_and_windows_have_required_shape(raw_frame):
     engineer = FeatureEngineer(window_size=30)
     features = engineer.transform(raw_frame)
     windows = engineer.make_windows(features)
+    assert not features.isna().any().any()
     assert list(features.columns) == [
         "log_return",
         "rsi_14",

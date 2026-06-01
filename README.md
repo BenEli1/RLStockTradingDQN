@@ -10,6 +10,7 @@ uv sync --extra dev
 Run checks:
 ```powershell
 uv run ruff check
+uv run ruff format --check
 uv run pytest --cov=src --cov-report=term-missing
 ```
 
@@ -32,11 +33,12 @@ uv run dqn-trader gui
 | Reward | Portfolio value change, optionally adjusted by costs and risk |
 | Episode | One chronological pass through a historical period |
 | Policy | Argmax over Q-values during evaluation; epsilon-greedy during training |
+| Return | Discounted cumulative reward estimated through Bellman targets |
 
 ## Dataset
 The required experiment uses `AAPL` from `2020-01-01` to `2023-01-01`, daily interval, with raw `Open`, `High`, `Low`, `Close`, and `Volume`. `YFinanceDataClient` stores cache files at `data/raw/{ticker}_{start}_{end}.parquet` and falls back to `data/raw/{ticker}.csv` when online download fails.
 
-The feature tensor contains: `log_return`, `rsi_14`, `macd`, `macd_signal`, `macd_hist`, `bb_pct`, `vwap_dist`, `volume_norm`, `position`, and `unrealised_pnl`. Splits are chronological 70/15/15 with no shuffling.
+The feature tensor contains: `log_return`, `rsi_14`, `macd`, `macd_signal`, `macd_hist`, `bb_pct`, `vwap_dist`, `volume_norm`, `position`, and `unrealised_pnl`. Splits are chronological 70/15/15 with no shuffling. Feature calculations use rolling or exponentially weighted past data only; test data is not used for hyperparameter selection.
 
 ## DQN Explanation
 The network estimates `Q(s,a)`, the expected discounted return of taking action `a` in state `s` and then continuing with the learned policy. It does not predict tomorrow's stock price. Dueling DQN separates state value from action advantage:
@@ -46,6 +48,14 @@ Q(s,a) = V(s) + (A(s,a) - mean_a A(s,a))
 ```
 
 This is useful in trading because many states may make `HOLD` reasonable, while active actions only matter in specific states.
+
+The Bellman target used during training is:
+
+```text
+target = reward + gamma * max_a' Q_target(next_state, a') * (1 - done)
+```
+
+Training stores `(state, action, reward, next_state, done)` transitions in a regular replay buffer, samples mini-batches, computes Huber loss between selected policy Q-values and Bellman targets, and updates the policy network with Adam. A separate target network is periodically synchronized to stabilize the target. Exploration is epsilon-greedy during training with configured start, minimum, and decay values.
 
 ## Architecture
 ```mermaid
@@ -61,6 +71,8 @@ flowchart TD
 
 The GUI and CLI call only the SDK. Data, environment, model, memory, training, and evaluation are separated modules under `src/dqn_trader/`.
 
+Invalid actions are handled explicitly in `TradingEnv`: `BUY` while already holding and `SELL` without a position receive `invalid_action_penalty`. The environment uses all-in/all-out positions for clarity.
+
 ## Experiments
 Required planned runs:
 
@@ -71,6 +83,24 @@ Required planned runs:
 | Reward ablation | AAPL | basic vs risk-adjusted | Show how reward design changes behavior |
 
 Outputs are stored in `results/`: `best_model.pt`, `training_metrics.json`, `training_curve.png`, `backtest_metrics.json`, and `backtest_equity.png`. Large checkpoints may be omitted from GitHub if regeneration commands are documented.
+
+`backtest_metrics.json` includes total return, Buy-and-Hold return, Sharpe ratio, max drawdown, win rate, trade count, and the action sequence. No real experiment results are claimed in this repository before the commands are run locally.
+
+## Configuration and Security
+Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live in `config/rate_limits.yaml`. `yfinance` does not require API keys, and no secrets are needed. `.env-example` documents that fact. `.gitignore` excludes `.env`, caches, model checkpoints, generated plots, and temporary test/lint artifacts.
+
+## Extension Points
+- Add another ticker by passing `--ticker` or changing `config/setup.yaml`.
+- Add a feature by extending `FeatureEngineer` and `FEATURE_COLUMNS`.
+- Add a reward variant by introducing another `RewardFunction` configuration or strategy.
+- Add a model by replacing `DuelingDQNNetwork` behind `TrainingService`.
+- Add a metric by extending `BacktestResult` and `BacktestService.save`.
+
+## Known Limitations
+- Real AAPL/SPY experiment results are not committed; run the commands above to generate them.
+- The model is intentionally compact for coursework and CPU feasibility.
+- Replay is regular replay, not prioritized replay.
+- The Tkinter GUI is functional and SDK-based, but screenshots must be captured after local runs if required by the final submission package.
 
 ## GUI Guide
 Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. It delegates all logic to `TradingSDK`, preserving the required architecture.

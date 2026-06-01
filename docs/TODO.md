@@ -11,5 +11,7 @@
 | Done | High | Implement replay and training | Training step saves checkpoint in integration test |
 | Done | Medium | Implement Tkinter GUI | Prepare/train buttons call SDK only |
 | Done | High | Write docs and diagrams | README and docs folder include required files |
+| Done | High | Add audit improvement docs | AI workflow, cost analysis, version history, and experiment summary exist |
+| Done | Medium | Add richer backtest metrics | Buy-and-Hold, Sharpe, drawdown, win rate, and trade count are reported |
 | Pending | Medium | Run full AAPL/SPY experiments | Requires dependency sync and optional network access |
 | Pending | Medium | Add screenshots to README | Capture after running GUI and plots |
