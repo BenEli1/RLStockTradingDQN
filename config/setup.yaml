@@ -23,6 +23,7 @@ reward:
   slippage_beta: 0.001
   risk_gamma: 0.05
 training:
+  seed: 42
   episodes: 5
   batch_size: 32
   gamma: 0.99

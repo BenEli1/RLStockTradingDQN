@@ -9,10 +9,12 @@ __pycache__/
 htmlcov/
 data/raw/*.parquet
 data/raw/*.csv
+data/raw/.yfinance-cache/
 results/*.pt
 results/*.png
 results/*.json
 results/*.csv
+results/**/*.pt
 *.pem
 *.key
 credentials.json

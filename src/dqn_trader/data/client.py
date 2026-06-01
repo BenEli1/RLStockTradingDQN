@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import yfinance as yf
+import yfinance.cache as yf_cache
 
 from dqn_trader.shared.constants import RAW_COLUMNS
 
@@ -17,6 +18,7 @@ class YFinanceDataClient:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         cache_file = self.cache_dir / f"{ticker}_{start}_{end}.parquet"
         csv_fallback = self.cache_dir / f"{ticker}.csv"
+        yf_cache.set_cache_location(str(self.cache_dir / ".yfinance-cache"))
         if cache_file.exists():
             try:
                 return self._select(pd.read_parquet(cache_file))

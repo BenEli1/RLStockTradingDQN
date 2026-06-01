@@ -1,34 +1,38 @@
 # Experiment Summary
 
-No real AAPL/SPY experiment results are committed yet. This is intentional: fabricated metrics would be misleading. Run the commands below after dependency setup and network access, or after placing CSV fallback files in `data/raw/`.
+Real compact local experiments were run with:
 
-## Planned Controlled Comparison
+```powershell
+uv run python scripts/run_experiments.py
+```
+
+The full generated report is committed at `results/experiments/REPORT.md`. The runs are educational diagnostics only, not financial advice.
+
+## Controlled Comparison
 
 | Item | Setup |
 |---|---|
 | Hypothesis | Cost/risk-adjusted rewards reduce unstable over-trading compared with a basic portfolio-delta reward. |
 | Main ticker | AAPL, 2020-01-01 to 2023-01-01, interval 1d |
-| Comparison ticker | SPY, same date range and data mechanism |
+| Attempted comparison ticker | SPY, same date range and data mechanism |
+| Completed comparison | AAPL risk-adjusted reward vs AAPL basic reward |
 | Model | Dueling DQN with regular replay and target network |
 | Metrics | Total return, Buy-and-Hold return, Sharpe ratio, max drawdown, win rate, trade count |
 
-## Commands
+## Results
 
-```powershell
-uv sync --extra dev
-uv run dqn-trader train --ticker AAPL
-uv run dqn-trader backtest --ticker AAPL
-uv run dqn-trader train --ticker SPY
-uv run dqn-trader backtest --ticker SPY
-```
+| Run | Ticker | Reward | Episodes | DQN Return | Buy/Hold Return | Sharpe | Max Drawdown | Win Rate | Trades |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| aapl_risk_adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 25 |
+| aapl_basic_reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3229 | 79 |
+| spy_risk_adjusted | SPY | risk_adjusted | 5 | failed | failed | failed | failed | failed | failed |
 
-## Expected Output Files
+## Output Files
 
-- `results/training_metrics.json`
-- `results/training_curve.png`
-- `results/backtest_metrics.json`
-- `results/backtest_equity.png`
+- `results/experiments/REPORT.md`
+- `results/experiments/summary.json`
+- Per-run training metrics, training curves, backtest metrics, and equity plots.
 
-## Critical Conclusion Template
+## Critical Conclusion
 
-After running the experiments, report whether the policy traded too often, whether Sharpe and drawdown support or contradict total return, and whether behavior on SPY suggests any generalization beyond AAPL.
+The short runs demonstrate that the code path works end-to-end, but they are not enough to claim a robust trading policy. The basic reward traded more often than the risk-adjusted reward, which supports the assignment's warning that reward design affects behavior. SPY failed locally because yfinance/curl could not verify the TLS certificate; this should be rerun with working network certificates or a CSV fallback.

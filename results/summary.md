@@ -1,19 +1,18 @@
 # Results Summary
 
-No real experiment output has been generated or committed yet.
-
-Run:
+Real compact experiment output was generated with:
 
 ```powershell
-uv run dqn-trader train --ticker AAPL
-uv run dqn-trader backtest --ticker AAPL
+uv run python scripts/run_experiments.py
 ```
 
-Expected generated files:
+See:
 
-- `results/training_metrics.json`
-- `results/training_curve.png`
-- `results/backtest_metrics.json`
-- `results/backtest_equity.png`
+- `results/experiments/REPORT.md`
+- `results/experiments/summary.json`
+- `results/experiments/aapl_risk_adjusted/`
+- `results/experiments/aapl_basic_reward/`
+
+The attempted `SPY` run failed locally because yfinance/curl could not verify the TLS certificate. This is documented in the report.
 
 Do not interpret generated backtest values as financial advice or evidence of future trading performance.

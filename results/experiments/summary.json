@@ -1,0 +1,38 @@
+[
+  {
+    "name": "aapl_risk_adjusted",
+    "ticker": "AAPL",
+    "reward_mode": "risk_adjusted",
+    "episodes": 5,
+    "final_training_reward": -3.053475853569258,
+    "loss_points": 3499,
+    "total_return": 1.0678195404786832,
+    "buy_hold_return": 0.899275136902415,
+    "sharpe_ratio": 0.9478393366453985,
+    "max_drawdown": -0.3034915102382567,
+    "win_rate": 0.4773371104815864,
+    "trade_count": 25
+  },
+  {
+    "name": "spy_risk_adjusted",
+    "ticker": "SPY",
+    "reward_mode": "risk_adjusted",
+    "episodes": 5,
+    "status": "failed",
+    "error": "No data returned for SPY"
+  },
+  {
+    "name": "aapl_basic_reward",
+    "ticker": "AAPL",
+    "reward_mode": "basic",
+    "episodes": 5,
+    "final_training_reward": -1.7483954600322231,
+    "loss_points": 3499,
+    "total_return": 2.431835626061013,
+    "buy_hold_return": 0.899275136902415,
+    "sharpe_ratio": 1.7794049277530286,
+    "max_drawdown": -0.23561552532367908,
+    "win_rate": 0.32294617563739375,
+    "trade_count": 79
+  }
+]

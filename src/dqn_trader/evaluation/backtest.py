@@ -38,7 +38,9 @@ class BacktestService:
             if done:
                 break
         returns = np.array(equity) / equity[0] - 1 if equity else np.array([0.0])
-        drawdown = returns - np.maximum.accumulate(returns)
+        equity_array = np.array(equity)
+        running_peak = np.maximum.accumulate(equity_array)
+        drawdown = (equity_array - running_peak) / running_peak
         buy_hold = self._buy_hold_curve(env, len(equity))
         buy_hold_return = buy_hold[-1] / buy_hold[0] - 1 if buy_hold else 0.0
         sharpe = self._sharpe(np.diff(np.array(equity)) / np.array(equity[:-1]))

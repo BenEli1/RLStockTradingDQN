@@ -51,12 +51,14 @@ class TradingSDK:
         checkpoint = Path(self.config["training"]["checkpoint_path"])
         return TrainingService(self.config["training"]).train(env, checkpoint)
 
-    def backtest(self, ticker: str | None = None) -> BacktestResult:
+    def backtest(
+        self, ticker: str | None = None, output_dir: Path = Path("results")
+    ) -> BacktestResult:
         raw, features, _splits = self.prepare_data(ticker)
         env = self.make_env(features, raw)
         model = self._load_model()
         result = BacktestService().run(env, model)
-        BacktestService.save(result, Path("results"))
+        BacktestService.save(result, output_dir)
         return result
 
     def predict_latest(self, ticker: str | None = None) -> tuple[int, list[float]]:

@@ -1,6 +1,7 @@
 """DQN training service."""
 
 import json
+import random as random_module
 from dataclasses import dataclass
 from pathlib import Path
 from random import random, randrange
@@ -28,6 +29,9 @@ class TrainingService:
 
     def train(self, env: TradingEnv, checkpoint_path: Path) -> TrainingResult:
         cfg = self.config
+        random_module.seed(cfg.get("seed", 42))
+        np.random.seed(cfg.get("seed", 42))
+        torch.manual_seed(cfg.get("seed", 42))
         policy = DuelingDQNNetwork(env.window_size, 10)
         target = DuelingDQNNetwork(env.window_size, 10)
         target.load_state_dict(policy.state_dict())
