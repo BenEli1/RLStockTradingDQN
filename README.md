@@ -57,6 +57,8 @@ target = reward + gamma * max_a' Q_target(next_state, a') * (1 - done)
 
 Training stores `(state, action, reward, next_state, done)` transitions in a regular replay buffer, samples mini-batches, computes Huber loss between selected policy Q-values and Bellman targets, and updates the policy network with Adam. A separate target network is periodically synchronized to stabilize the target. Exploration is epsilon-greedy during training with configured start, minimum, and decay values.
 
+For a fuller code-connected explanation, see [docs/RL_TUTORIAL.md](docs/RL_TUTORIAL.md).
+
 ## Architecture
 ```mermaid
 flowchart TD
@@ -103,7 +105,7 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 - The Tkinter GUI is functional and SDK-based, but screenshots must be captured after local runs if required by the final submission package.
 
 ## GUI Guide
-Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. It delegates all logic to `TradingSDK`, preserving the required architecture.
+Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. It includes tabs for market data, training curves, backtest equity curves, and a run log. It delegates all logic to `TradingSDK`, preserving the required architecture.
 
 ## Testing and TDD Notes
 The tests cover configuration, CSV fallback, feature engineering, chronological split, environment actions, reward penalties, replay sampling, Dueling network output shape, checkpoint saving, and SDK orchestration. Two TDD examples used here are the feature tensor shape test and invalid-action environment test: write failing expectation, implement minimal logic, then refactor into focused modules.

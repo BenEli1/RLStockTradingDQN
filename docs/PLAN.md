@@ -36,6 +36,7 @@ Training uses epsilon-greedy exploration, replay sampling, Huber loss, Bellman t
 - `training`: epsilon-greedy training loop, Bellman targets, target network sync, loss, optimizer step, checkpoints, and training plots.
 - `evaluation`: greedy-policy backtest, Buy-and-Hold baseline, Sharpe, drawdown, win rate, and trade count.
 - `sdk`: single facade for CLI and GUI.
+- `interface`: Tkinter GUI with controls, status, run log, and embedded matplotlib charts.
 
 ## Extension Points
 - Additional reward functions can be added by introducing a new reward strategy and selecting it in `TradingSDK.make_env`.

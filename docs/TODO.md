@@ -13,5 +13,7 @@
 | Done | High | Write docs and diagrams | README and docs folder include required files |
 | Done | High | Add audit improvement docs | AI workflow, cost analysis, version history, and experiment summary exist |
 | Done | Medium | Add richer backtest metrics | Buy-and-Hold, Sharpe, drawdown, win rate, and trade count are reported |
+| Done | Medium | Improve GUI presentation | GUI includes tabs, run log, status, and embedded charts |
+| Done | Medium | Add RL tutorial | Code-connected tutorial explains Q-table, DQN, tensors, rewards, and backtesting |
 | Pending | Medium | Run full AAPL/SPY experiments | Requires dependency sync and optional network access |
 | Pending | Medium | Add screenshots to README | Capture after running GUI and plots |

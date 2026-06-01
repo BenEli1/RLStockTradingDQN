@@ -4,55 +4,163 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 
+from dqn_trader.interface.charts import ChartPanel
 from dqn_trader.sdk.sdk import TradingSDK
 
 
 class TraderApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("DQN Trader SDK")
-        self.geometry("720x420")
+        self.title("DQN Trader SDK - Assignment 02")
+        self.geometry("1120x720")
+        self.minsize(980, 640)
         self.sdk = TradingSDK()
         self.ticker = tk.StringVar(value=self.sdk.config["data"]["ticker"])
-        self.output = tk.StringVar(value="Ready")
+        self.episodes = tk.StringVar(value=str(self.sdk.config["training"]["episodes"]))
+        self.status = tk.StringVar(value="Ready")
+        self.summary = tk.StringVar(value="No run yet")
         self._build()
 
     def _build(self) -> None:
-        frame = ttk.Frame(self, padding=12)
-        frame.pack(fill="both", expand=True)
-        ttk.Label(frame, text="Ticker").grid(row=0, column=0, sticky="w")
-        ttk.Entry(frame, textvariable=self.ticker, width=12).grid(row=0, column=1, sticky="w")
-        ttk.Button(frame, text="Prepare Data", command=self._prepare).grid(row=1, column=0, pady=8)
-        ttk.Button(frame, text="Train Dueling DQN", command=self._train).grid(
-            row=1, column=1, pady=8
+        self._style()
+        shell = ttk.Frame(self, padding=16)
+        shell.pack(fill="both", expand=True)
+        shell.columnconfigure(1, weight=1)
+        shell.rowconfigure(1, weight=1)
+        ttk.Label(shell, text="DQN Trader SDK", style="Title.TLabel").grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 12)
         )
-        ttk.Button(frame, text="Backtest", command=self._backtest).grid(row=1, column=2, pady=8)
-        ttk.Button(frame, text="Predict", command=self._predict).grid(row=1, column=3, pady=8)
-        ttk.Label(frame, textvariable=self.output, wraplength=660).grid(
-            row=2, column=0, columnspan=4, sticky="w"
+        controls = ttk.LabelFrame(shell, text="Run Controls", padding=12)
+        controls.grid(row=1, column=0, sticky="ns", padx=(0, 14))
+        ttk.Label(controls, text="Ticker").pack(anchor="w")
+        ttk.Entry(controls, textvariable=self.ticker, width=16).pack(fill="x", pady=(0, 10))
+        ttk.Label(controls, text="Episodes").pack(anchor="w")
+        ttk.Entry(controls, textvariable=self.episodes, width=16).pack(fill="x", pady=(0, 14))
+        for label, command in [
+            ("Prepare Data", self._prepare),
+            ("Train", self._train),
+            ("Backtest", self._backtest),
+            ("Predict", self._predict),
+        ]:
+            ttk.Button(controls, text=label, command=command).pack(fill="x", pady=4)
+        ttk.Separator(controls).pack(fill="x", pady=12)
+        ttk.Label(controls, textvariable=self.summary, wraplength=190).pack(anchor="w")
+        self.tabs = ttk.Notebook(shell)
+        self.tabs.grid(row=1, column=1, sticky="nsew")
+        self.data_chart = self._tab("Market Data", "Close price")
+        self.training_chart = self._tab("Training", "Episode reward / loss")
+        self.backtest_chart = self._tab("Backtest", "Equity curve")
+        self.log = tk.Text(self.tabs, height=8, wrap="word")
+        self.tabs.add(self.log, text="Run Log")
+        ttk.Label(shell, textvariable=self.status, style="Status.TLabel").grid(
+            row=2, column=0, columnspan=2, sticky="ew", pady=(12, 0)
         )
+        self._write_log("Ready. Use Prepare Data first, then Train and Backtest.")
 
     def _prepare(self) -> None:
-        self._run(lambda: self.sdk.prepare_data(self.ticker.get()), "Data prepared")
+        ticker = self.ticker.get()
+
+        def task():
+            raw, features, splits = self.sdk.prepare_data(ticker)
+            close_values = raw["Close"].tolist()
+            split_sizes = [len(part) for part in splits]
+
+            def update() -> None:
+                self.data_chart.draw_lines({"Close": close_values}, "Close Price", "Price")
+                self.summary.set(
+                    f"Raw rows: {len(raw)}\nFeature rows: {len(features)}\n"
+                    f"Split sizes: {split_sizes}"
+                )
+
+            return "Data prepared", update
+
+        self._run(task)
 
     def _train(self) -> None:
-        self._run(lambda: self.sdk.train(self.ticker.get()), "Training completed")
+        ticker = self.ticker.get()
+        episodes = int(self.episodes.get())
+
+        def task():
+            self.sdk.config["training"]["episodes"] = episodes
+            result = self.sdk.train(ticker)
+
+            def update() -> None:
+                self.training_chart.draw_lines(
+                    {"Reward": result.rewards, "Loss": result.losses},
+                    "Training Reward and Loss",
+                    "Value",
+                )
+
+            return f"Training completed. Checkpoint: {result.checkpoint_path}", update
+
+        self._run(task)
 
     def _backtest(self) -> None:
-        self._run(lambda: self.sdk.backtest(self.ticker.get()), "Backtest completed")
+        ticker = self.ticker.get()
+
+        def task():
+            result = self.sdk.backtest(ticker)
+
+            def update() -> None:
+                self.backtest_chart.draw_lines(
+                    {"DQN": result.equity_curve, "Buy-and-Hold": result.buy_hold_curve},
+                    "Backtest Equity Curve",
+                    "Portfolio Value",
+                )
+
+            message = (
+                f"Backtest: return={result.total_return:.3f}, "
+                f"buy_hold={result.buy_hold_return:.3f}, sharpe={result.sharpe_ratio:.3f}, "
+                f"drawdown={result.max_drawdown:.3f}, trades={result.trade_count}"
+            )
+            return message, update
+
+        self._run(task)
 
     def _predict(self) -> None:
-        self._run(lambda: self.sdk.predict_latest(self.ticker.get()), "Prediction completed")
+        ticker = self.ticker.get()
 
-    def _run(self, func, success: str) -> None:
+        def task():
+            action, q_values = self.sdk.predict_latest(ticker)
+            labels = ["SELL", "HOLD", "BUY"]
+            return f"Prediction: {labels[action]} | Q-values={q_values}", None
+
+        self._run(task)
+
+    def _run(self, func) -> None:
         def worker() -> None:
             try:
-                result = func()
-                self.output.set(f"{success}: {result}")
+                self.after(0, self.status.set, "Running...")
+                message, update = func()
+                self.after(0, self._finish_run, message, update)
             except Exception as exc:
-                self.output.set(f"Error: {exc}")
+                self.after(0, self._finish_run, f"Error: {exc}", None)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def _finish_run(self, message: str, update) -> None:
+        if update is not None:
+            update()
+        self.status.set(message)
+        self._write_log(message)
+
+    def _tab(self, label: str, empty_message: str) -> ChartPanel:
+        frame = ttk.Frame(self.tabs, padding=10)
+        self.tabs.add(frame, text=label)
+        chart = ChartPanel(frame, label)
+        chart.draw_empty(empty_message)
+        return chart
+
+    def _write_log(self, text: str) -> None:
+        self.log.insert("end", f"{text}\n")
+        self.log.see("end")
+
+    def _style(self) -> None:
+        style = ttk.Style(self)
+        style.theme_use("clam")
+        style.configure("Title.TLabel", font=("Segoe UI", 20, "bold"))
+        style.configure("Status.TLabel", padding=8, background="#eef2f6")
+        style.configure("TButton", padding=7)
 
 
 def launch_gui() -> None:
