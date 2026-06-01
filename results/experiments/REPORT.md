@@ -5,9 +5,9 @@ They are educational diagnostics, not financial advice and not proof of future p
 
 | Run | Ticker | Reward | Episodes | DQN Return | Buy/Hold Return | Sharpe | Max Drawdown | Win Rate | Trades |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| aapl_risk_adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 25 |
+| aapl_risk_adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 23 |
 | spy_risk_adjusted | SPY | risk_adjusted | 5 | FAILED | FAILED | FAILED | FAILED | FAILED | FAILED |
-| aapl_basic_reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3229 | 79 |
+| aapl_basic_reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3244 | 63 |
 
 ## What We Learned
 - A short five-episode run is enough to validate the pipeline, but not enough to claim a strong trading policy.

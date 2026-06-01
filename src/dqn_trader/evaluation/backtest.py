@@ -17,23 +17,27 @@ class BacktestResult:
     equity_curve: list[float]
     buy_hold_curve: list[float]
     actions: list[int]
+    executed_trades: list[int]
     total_return: float
     buy_hold_return: float
     sharpe_ratio: float
     max_drawdown: float
     win_rate: float
     trade_count: int
+    invalid_action_count: int
 
 
 class BacktestService:
     def run(self, env: TradingEnv, model: DuelingDQNNetwork) -> BacktestResult:
         state = env.reset()
-        equity, actions, wins = [], [], 0
+        equity, actions, executed_trades, wins, invalid_actions = [], [], [], 0, 0
         while True:
-            action, _q_values = InferenceService.predict(model, state)
+            action, _q_values = InferenceService.predict(model, state, has_position=env.shares > 0)
             state, reward, done, info = env.step(action)
             equity.append(info["portfolio_value"])
             actions.append(action)
+            executed_trades.append(int(info["traded"]))
+            invalid_actions += int(info["invalid_action"])
             wins += int(reward > 0)
             if done:
                 break
@@ -44,17 +48,19 @@ class BacktestService:
         buy_hold = self._buy_hold_curve(env, len(equity))
         buy_hold_return = buy_hold[-1] / buy_hold[0] - 1 if buy_hold else 0.0
         sharpe = self._sharpe(np.diff(np.array(equity)) / np.array(equity[:-1]))
-        trade_count = sum(1 for action in actions if action != 1)
+        trade_count = sum(executed_trades)
         return BacktestResult(
             equity,
             buy_hold,
             actions,
+            executed_trades,
             float(returns[-1]),
             float(buy_hold_return),
             sharpe,
             float(drawdown.min()),
             wins / max(len(actions), 1),
             trade_count,
+            invalid_actions,
         )
 
     @staticmethod
@@ -67,7 +73,9 @@ class BacktestService:
             "max_drawdown": result.max_drawdown,
             "win_rate": result.win_rate,
             "trade_count": result.trade_count,
+            "invalid_action_count": result.invalid_action_count,
             "actions": result.actions,
+            "executed_trades": result.executed_trades,
         }
         (results_dir / "backtest_metrics.json").write_text(
             json.dumps(payload, indent=2), encoding="utf-8"
@@ -98,7 +106,14 @@ class BacktestService:
 
 class InferenceService:
     @staticmethod
-    def predict(model: DuelingDQNNetwork, state: np.ndarray) -> tuple[int, list[float]]:
+    def predict(
+        model: DuelingDQNNetwork, state: np.ndarray, has_position: bool | None = None
+    ) -> tuple[int, list[float]]:
         with torch.no_grad():
             q_values = model(torch.tensor(state[None, ...], dtype=torch.float32)).squeeze(0)
-        return int(torch.argmax(q_values).item()), [float(value) for value in q_values]
+        raw_values = [float(value) for value in q_values]
+        if has_position is False:
+            q_values[0] = -float("inf")
+        elif has_position is True:
+            q_values[2] = -float("inf")
+        return int(torch.argmax(q_values).item()), raw_values

@@ -122,7 +122,8 @@ class TraderApp(tk.Tk):
             message = (
                 f"Backtest: return={result.total_return:.3f}, "
                 f"buy_hold={result.buy_hold_return:.3f}, sharpe={result.sharpe_ratio:.3f}, "
-                f"drawdown={result.max_drawdown:.3f}, trades={result.trade_count}"
+                f"drawdown={result.max_drawdown:.3f}, executed_trades={result.trade_count}, "
+                f"invalid_actions={result.invalid_action_count}"
             )
             return message, update
 
@@ -134,7 +135,13 @@ class TraderApp(tk.Tk):
         def task():
             action, q_values = self.sdk.predict_latest(ticker)
             labels = ["SELL", "HOLD", "BUY"]
-            return f"Prediction: {labels[action]} | Q-values={q_values}", None
+            ordered = sorted(q_values, reverse=True)
+            margin = ordered[0] - ordered[1] if len(ordered) > 1 else 0.0
+            confidence = "low" if margin < 0.05 else "medium" if margin < 0.15 else "high"
+            return (
+                f"Prediction: {labels[action]} | confidence={confidence} | "
+                f"margin={margin:.4f} | Q-values={q_values}"
+            ), None
 
         self._run(task)
 

@@ -30,6 +30,7 @@ class TradingEnv:
         previous_value = self._portfolio_value()
         price = float(self.prices.iloc[self.index])
         traded = False
+        invalid_action = False
         penalty = 0.0
         if action == Action.BUY and self.shares == 0:
             self.shares = self.cash / price
@@ -41,6 +42,7 @@ class TradingEnv:
             self.shares = 0.0
             traded = True
         elif action in (Action.BUY, Action.SELL):
+            invalid_action = True
             penalty = self.invalid_action_penalty
         self.index += 1
         self.done = self.index >= len(self.features) - 1
@@ -56,7 +58,11 @@ class TradingEnv:
             self._state(),
             reward,
             self.done,
-            {"portfolio_value": current_value, "traded": float(traded)},
+            {
+                "portfolio_value": current_value,
+                "traded": float(traded),
+                "invalid_action": float(invalid_action),
+            },
         )
 
     def _portfolio_value(self) -> float:

@@ -47,8 +47,8 @@ Summary of the real local run:
 
 | Run | Ticker | Reward | Episodes | DQN Return | Buy/Hold Return | Sharpe | Max Drawdown | Win Rate | Trades |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| AAPL risk-adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 25 |
-| AAPL basic reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3229 | 79 |
+| AAPL risk-adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 23 |
+| AAPL basic reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3244 | 63 |
 | SPY risk-adjusted | SPY | risk_adjusted | 5 | failed locally | failed locally | failed locally | failed locally | failed locally | failed locally |
 
 The SPY comparison was attempted but failed on this machine because yfinance/curl hit a TLS certificate verification problem. That failure is recorded in the report instead of hidden. The project still supports SPY/NVDA through the same data path when network certificates work or when CSV fallback files are provided.
@@ -129,6 +129,8 @@ flowchart TD
 The GUI and CLI call only the SDK. Data, environment, model, memory, training, and evaluation are separated modules under `src/dqn_trader/`.
 
 Invalid actions are handled explicitly in `TradingEnv`: `BUY` while already holding and `SELL` without a position receive `invalid_action_penalty`. The environment uses all-in/all-out positions for clarity.
+
+During backtest and latest-state prediction, the evaluation policy masks impossible actions so the displayed policy is executable. For example, `SELL` is masked when no position is open, and `BUY` is masked while already holding. Training still exposes the agent to invalid-action penalties.
 
 ## Experiments
 Experiment outputs are stored under `results/experiments/`. The committed report includes both successful AAPL runs and the failed SPY attempt.

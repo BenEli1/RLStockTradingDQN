@@ -22,10 +22,16 @@ def main() -> None:
         print(f"episodes={len(result.rewards)} checkpoint={result.checkpoint_path}")
     elif args.command == "backtest":
         result = sdk.backtest(args.ticker)
-        print(f"return={result.total_return:.4f} drawdown={result.max_drawdown:.4f}")
+        print(
+            f"return={result.total_return:.4f} drawdown={result.max_drawdown:.4f} "
+            f"executed_trades={result.trade_count} invalid_actions={result.invalid_action_count}"
+        )
     elif args.command == "predict":
         action, q_values = sdk.predict_latest(args.ticker)
-        print(f"action={action} q_values={q_values}")
+        ordered = sorted(q_values, reverse=True)
+        margin = ordered[0] - ordered[1] if len(ordered) > 1 else 0.0
+        confidence = "low" if margin < 0.05 else "medium" if margin < 0.15 else "high"
+        print(f"action={action} confidence={confidence} margin={margin:.4f} q_values={q_values}")
     else:
         launch_gui()
 

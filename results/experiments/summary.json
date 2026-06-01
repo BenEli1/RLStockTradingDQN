@@ -11,7 +11,7 @@
     "sharpe_ratio": 0.9478393366453985,
     "max_drawdown": -0.3034915102382567,
     "win_rate": 0.4773371104815864,
-    "trade_count": 25
+    "trade_count": 23
   },
   {
     "name": "spy_risk_adjusted",
@@ -32,7 +32,7 @@
     "buy_hold_return": 0.899275136902415,
     "sharpe_ratio": 1.7794049277530286,
     "max_drawdown": -0.23561552532367908,
-    "win_rate": 0.32294617563739375,
-    "trade_count": 79
+    "win_rate": 0.3243626062322946,
+    "trade_count": 63
   }
 ]

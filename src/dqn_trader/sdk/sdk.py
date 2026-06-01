@@ -11,6 +11,7 @@ from dqn_trader.env.reward import RewardFunction
 from dqn_trader.env.trading_env import TradingEnv
 from dqn_trader.evaluation.backtest import BacktestResult, BacktestService, InferenceService
 from dqn_trader.model.network import DuelingDQNNetwork
+from dqn_trader.shared.constants import FEATURE_COLUMNS
 from dqn_trader.training.service import TrainingResult, TrainingService
 
 
@@ -63,9 +64,10 @@ class TradingSDK:
 
     def predict_latest(self, ticker: str | None = None) -> tuple[int, list[float]]:
         raw, features, _splits = self.prepare_data(ticker)
-        env = self.make_env(features, raw)
         model = self._load_model()
-        return InferenceService.predict(model, env.reset())
+        window_size = self.config["features"]["window_size"]
+        state = features.tail(window_size)[FEATURE_COLUMNS].to_numpy(dtype="float32")
+        return InferenceService.predict(model, state, has_position=False)
 
     def _load_model(self) -> DuelingDQNNetwork:
         model = DuelingDQNNetwork(
