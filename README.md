@@ -107,6 +107,29 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 ## GUI Guide
 Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. It includes tabs for market data, training curves, backtest equity curves, and a run log. It delegates all logic to `TradingSDK`, preserving the required architecture.
 
+## Visual Demonstration
+The images below are generated preview/demo assets committed under `assets/`. They demonstrate the GUI layout and expected plot types before running a real AAPL/SPY experiment; they are not claimed as real trading results.
+
+![Tkinter dashboard preview](assets/gui_dashboard_preview.png)
+
+Market data plot type:
+
+![Demo market data chart](assets/demo_market_data.png)
+
+Training plot type:
+
+![Demo training chart](assets/demo_training_curve.png)
+
+Backtest plot type:
+
+![Demo backtest equity chart](assets/demo_backtest_equity.png)
+
+To regenerate these README assets:
+
+```powershell
+uv run python scripts/generate_readme_assets.py
+```
+
 ## Testing and TDD Notes
 The tests cover configuration, CSV fallback, feature engineering, chronological split, environment actions, reward penalties, replay sampling, Dueling network output shape, checkpoint saving, and SDK orchestration. Two TDD examples used here are the feature tensor shape test and invalid-action environment test: write failing expectation, implement minimal logic, then refactor into focused modules.
 
