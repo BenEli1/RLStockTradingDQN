@@ -20,6 +20,7 @@ from dqn_trader.model.network import DuelingDQNNetwork
 class TrainingResult:
     rewards: list[float]
     losses: list[float]
+    episode_losses: list[float]
     checkpoint_path: Path
 
 
@@ -38,10 +39,11 @@ class TrainingService:
         optimizer = torch.optim.Adam(policy.parameters(), lr=cfg["learning_rate"])
         buffer = ReplayBuffer(cfg["replay_capacity"])
         epsilon = cfg["epsilon_start"]
-        rewards, losses, best_reward = [], [], -float("inf")
+        rewards, losses, episode_losses, best_reward = [], [], [], -float("inf")
         for _episode in range(cfg["episodes"]):
             state = env.reset()
             total_reward = 0.0
+            current_losses = []
             steps = 0
             while True:
                 action = randrange(3) if random() < epsilon else self._select(policy, state)
@@ -49,7 +51,9 @@ class TrainingService:
                 buffer.push(Transition(state, action, reward, next_state, done))
                 state, total_reward = next_state, total_reward + reward
                 if len(buffer) >= cfg["batch_size"]:
-                    losses.append(self._learn(policy, target, optimizer, buffer))
+                    loss = self._learn(policy, target, optimizer, buffer)
+                    losses.append(loss)
+                    current_losses.append(loss)
                 steps += 1
                 if steps % cfg["target_update_steps"] == 0:
                     target.load_state_dict(policy.state_dict())
@@ -63,8 +67,9 @@ class TrainingService:
                     {"model_state": policy.state_dict(), "reward": total_reward}, checkpoint_path
                 )
             rewards.append(total_reward)
-        self._write_metrics(checkpoint_path.parent, rewards, losses)
-        return TrainingResult(rewards, losses, checkpoint_path)
+            episode_losses.append(float(np.mean(current_losses)) if current_losses else 0.0)
+        self._write_metrics(checkpoint_path.parent, rewards, losses, episode_losses)
+        return TrainingResult(rewards, losses, episode_losses, checkpoint_path)
 
     def _learn(
         self,
@@ -97,17 +102,33 @@ class TrainingService:
         return int(torch.argmax(q_values, dim=1).item())
 
     @staticmethod
-    def _write_metrics(results_dir: Path, rewards: list[float], losses: list[float]) -> None:
+    def _write_metrics(
+        results_dir: Path,
+        rewards: list[float],
+        losses: list[float],
+        episode_losses: list[float],
+    ) -> None:
         results_dir.mkdir(parents=True, exist_ok=True)
         (results_dir / "training_metrics.json").write_text(
-            json.dumps({"rewards": rewards, "losses": losses}, indent=2),
+            json.dumps(
+                {"rewards": rewards, "losses": losses, "episode_losses": episode_losses},
+                indent=2,
+            ),
             encoding="utf-8",
         )
-        plt.figure(figsize=(8, 4))
-        plt.plot(rewards, label="episode reward")
-        if losses:
-            plt.plot(losses, label="loss", alpha=0.7)
-        plt.legend()
+        figure, axis_reward = plt.subplots(figsize=(8, 4))
+        axis_reward.plot(rewards, label="episode reward", color="#2563eb")
+        axis_reward.set_xlabel("Episode")
+        axis_reward.set_ylabel("Reward")
+        axis_reward.grid(True, alpha=0.25)
+        if episode_losses:
+            axis_loss = axis_reward.twinx()
+            axis_loss.plot(episode_losses, label="mean loss", color="#f97316", alpha=0.85)
+            axis_loss.set_ylabel("Mean loss")
+            lines = axis_reward.lines + axis_loss.lines
+            axis_reward.legend(lines, [line.get_label() for line in lines], loc="best")
+        else:
+            axis_reward.legend(loc="best")
         plt.tight_layout()
         plt.savefig(results_dir / "training_curve.png")
         plt.close()

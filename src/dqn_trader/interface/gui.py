@@ -96,10 +96,12 @@ class TraderApp(tk.Tk):
             result = self.sdk.train(ticker)
 
             def update() -> None:
-                self.training_chart.draw_lines(
-                    {"Reward": result.rewards, "Loss": result.losses},
-                    "Training Reward and Loss",
-                    "Value",
+                self.training_chart.draw_dual_axis(
+                    {"Reward": result.rewards},
+                    {"Mean loss": result.episode_losses},
+                    "Training Reward and Mean Loss",
+                    "Episode reward",
+                    "Mean loss",
                 )
 
             return f"Training completed. Checkpoint: {result.checkpoint_path}", update
