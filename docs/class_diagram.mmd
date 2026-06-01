@@ -1,0 +1,38 @@
+classDiagram
+    class TradingSDK {
+      +prepare_data(ticker)
+      +make_env(features, raw, reward_mode)
+      +train(ticker, reward_mode)
+    }
+    class YFinanceDataClient {
+      +load_daily(ticker, start, end, interval)
+    }
+    class FeatureEngineer {
+      +transform(raw)
+      +make_windows(features)
+      +chronological_split(frame, train, validation)
+    }
+    class TradingEnv {
+      +reset()
+      +step(action)
+    }
+    class RewardFunction {
+      +compute(previous_value, current_value, traded, volatility)
+    }
+    class TrainingService {
+      +train(env, checkpoint_path)
+    }
+    class DuelingDQNNetwork {
+      +forward(states)
+    }
+    class ReplayBuffer {
+      +push(transition)
+      +sample(batch_size)
+    }
+    TradingSDK --> YFinanceDataClient
+    TradingSDK --> FeatureEngineer
+    TradingSDK --> TradingEnv
+    TradingSDK --> TrainingService
+    TradingEnv --> RewardFunction
+    TrainingService --> DuelingDQNNetwork
+    TrainingService --> ReplayBuffer

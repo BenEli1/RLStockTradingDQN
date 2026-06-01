@@ -1,0 +1,6 @@
+version: "1.00"
+rate_limits:
+  yfinance_download_per_minute: 30
+retries:
+  attempts: 2
+  backoff_seconds: 1.0

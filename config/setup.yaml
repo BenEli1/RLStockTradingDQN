@@ -1,0 +1,35 @@
+version: "1.00"
+seed: 42
+data:
+  ticker: AAPL
+  comparison_ticker: SPY
+  start: "2020-01-01"
+  end: "2023-01-01"
+  interval: "1d"
+  cache_dir: data/raw
+  required_columns: [Open, High, Low, Close, Volume]
+features:
+  window_size: 30
+  feature_count: 10
+split:
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+environment:
+  initial_cash: 10000.0
+  invalid_action_penalty: 0.01
+reward:
+  transaction_cost_alpha: 0.001
+  slippage_beta: 0.001
+  risk_gamma: 0.05
+training:
+  episodes: 5
+  batch_size: 32
+  gamma: 0.99
+  learning_rate: 0.001
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.995
+  replay_capacity: 5000
+  target_update_steps: 50
+  checkpoint_path: results/best_model.pt

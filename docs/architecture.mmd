@@ -1,0 +1,11 @@
+flowchart TD
+    GUI["Tkinter GUI / CLI"] --> SDK["TradingSDK facade"]
+    SDK --> DATA["YFinanceDataClient"]
+    SDK --> FE["FeatureEngineer"]
+    SDK --> ENV["TradingEnv + RewardFunction"]
+    SDK --> TRAIN["TrainingService"]
+    TRAIN --> MODEL["DuelingDQNNetwork"]
+    TRAIN --> MEMORY["ReplayBuffer"]
+    TRAIN --> CKPT["Checkpoint"]
+    SDK --> EVAL["BacktestService / InferenceService"]
+    DATA --> CACHE["Parquet cache / CSV fallback"]
