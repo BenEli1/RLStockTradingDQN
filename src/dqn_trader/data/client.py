@@ -18,7 +18,11 @@ class YFinanceDataClient:
         cache_file = self.cache_dir / f"{ticker}_{start}_{end}.parquet"
         csv_fallback = self.cache_dir / f"{ticker}.csv"
         if cache_file.exists():
-            return self._select(pd.read_parquet(cache_file))
+            try:
+                return self._select(pd.read_parquet(cache_file))
+            except Exception:
+                # A partial/corrupt cache should not block the required data path.
+                pass
         try:
             frame = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
             if isinstance(frame.columns, pd.MultiIndex):

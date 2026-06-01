@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from dqn_trader.interface.charts import ChartPanel
+from dqn_trader.interface.style import apply_dashboard_style
 from dqn_trader.sdk.sdk import TradingSDK
 
 
@@ -22,16 +23,24 @@ class TraderApp(tk.Tk):
         self._build()
 
     def _build(self) -> None:
-        self._style()
+        apply_dashboard_style(self)
+        header = tk.Frame(self, bg="#1f2937", height=72)
+        header.pack(fill="x")
+        tk.Label(
+            header,
+            text="DQN Trader SDK - Tkinter Dashboard",
+            bg="#1f2937",
+            fg="#ffffff",
+            font=("Segoe UI", 20, "bold"),
+            padx=24,
+            pady=18,
+        ).pack(anchor="w")
         shell = ttk.Frame(self, padding=16)
         shell.pack(fill="both", expand=True)
         shell.columnconfigure(1, weight=1)
         shell.rowconfigure(1, weight=1)
-        ttk.Label(shell, text="DQN Trader SDK", style="Title.TLabel").grid(
-            row=0, column=0, columnspan=2, sticky="w", pady=(0, 12)
-        )
         controls = ttk.LabelFrame(shell, text="Run Controls", padding=12)
-        controls.grid(row=1, column=0, sticky="ns", padx=(0, 14))
+        controls.grid(row=0, column=0, sticky="ns", padx=(0, 14))
         ttk.Label(controls, text="Ticker").pack(anchor="w")
         ttk.Entry(controls, textvariable=self.ticker, width=16).pack(fill="x", pady=(0, 10))
         ttk.Label(controls, text="Episodes").pack(anchor="w")
@@ -42,18 +51,20 @@ class TraderApp(tk.Tk):
             ("Backtest", self._backtest),
             ("Predict", self._predict),
         ]:
-            ttk.Button(controls, text=label, command=command).pack(fill="x", pady=4)
+            ttk.Button(controls, text=label, command=command, style="Accent.TButton").pack(
+                fill="x", pady=4
+            )
         ttk.Separator(controls).pack(fill="x", pady=12)
         ttk.Label(controls, textvariable=self.summary, wraplength=190).pack(anchor="w")
         self.tabs = ttk.Notebook(shell)
-        self.tabs.grid(row=1, column=1, sticky="nsew")
+        self.tabs.grid(row=0, column=1, sticky="nsew")
         self.data_chart = self._tab("Market Data", "Close price")
         self.training_chart = self._tab("Training", "Episode reward / loss")
         self.backtest_chart = self._tab("Backtest", "Equity curve")
         self.log = tk.Text(self.tabs, height=8, wrap="word")
         self.tabs.add(self.log, text="Run Log")
         ttk.Label(shell, textvariable=self.status, style="Status.TLabel").grid(
-            row=2, column=0, columnspan=2, sticky="ew", pady=(12, 0)
+            row=1, column=0, columnspan=2, sticky="ew", pady=(12, 0)
         )
         self._write_log("Ready. Use Prepare Data first, then Train and Backtest.")
 
@@ -154,13 +165,6 @@ class TraderApp(tk.Tk):
     def _write_log(self, text: str) -> None:
         self.log.insert("end", f"{text}\n")
         self.log.see("end")
-
-    def _style(self) -> None:
-        style = ttk.Style(self)
-        style.theme_use("clam")
-        style.configure("Title.TLabel", font=("Segoe UI", 20, "bold"))
-        style.configure("Status.TLabel", padding=8, background="#eef2f6")
-        style.configure("TButton", padding=7)
 
 
 def launch_gui() -> None:
