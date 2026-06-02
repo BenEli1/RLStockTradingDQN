@@ -16,7 +16,7 @@ class YFinanceDataClient:
 
     def load_daily(self, ticker: str, start: str, end: str, interval: str = "1d") -> pd.DataFrame:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        cache_file = self.cache_dir / f"{ticker}_{start}_{end}.parquet"
+        cache_file = self.cache_dir / f"{ticker}_{start}_{end}_{interval}_raw.parquet"
         csv_fallback = self.cache_dir / f"{ticker}.csv"
         yf_cache.set_cache_location(str(self.cache_dir / ".yfinance-cache"))
         if cache_file.exists():
@@ -26,7 +26,14 @@ class YFinanceDataClient:
                 # A partial/corrupt cache should not block the required data path.
                 pass
         try:
-            frame = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
+            frame = yf.download(
+                ticker,
+                start=start,
+                end=end,
+                interval=interval,
+                progress=False,
+                auto_adjust=False,
+            )
             if isinstance(frame.columns, pd.MultiIndex):
                 frame.columns = frame.columns.droplevel(1)
             if frame.empty:

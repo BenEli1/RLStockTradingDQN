@@ -21,7 +21,7 @@ Current local validation after the latest experiment/report pass:
 
 - `ruff check`: passed
 - `ruff format --check`: passed
-- `pytest`: 15 tests passed, coverage above 85%
+- `pytest`: 24 tests passed, `96.60%` coverage
 
 ## Run the GUI
 ```powershell
@@ -35,6 +35,7 @@ The GUI is the preferred way to demonstrate the project. It includes:
 - Dueling DQN training.
 - Backtest.
 - Latest-state action prediction.
+- One-click full pipeline: prepare data, train, backtest, predict, and update all plots.
 - Market data, training, and backtest plot tabs.
 - Run log and status output.
 
@@ -91,7 +92,9 @@ uv run python scripts/run_experiments.py
 | Return | Discounted cumulative reward estimated through Bellman targets |
 
 ## Dataset
-The required experiment uses `AAPL` from `2020-01-01` to `2023-01-01`, daily interval, with raw `Open`, `High`, `Low`, `Close`, and `Volume`. `YFinanceDataClient` stores cache files at `data/raw/{ticker}_{start}_{end}.parquet` and falls back to `data/raw/{ticker}.csv` when online download fails.
+The required experiment uses `AAPL` from `2020-01-01` to `2023-01-01`, daily interval, with raw split-adjusted Yahoo-style `Open`, `High`, `Low`, `Close`, and `Volume`. `YFinanceDataClient` calls `yfinance.download(..., auto_adjust=False)` explicitly, stores cache files at `data/raw/{ticker}_{start}_{end}_{interval}_raw.parquet`, and falls back to `data/raw/{ticker}.csv` when online download fails.
+
+Price validation note: an older local cache used dividend-adjusted OHLC values. For example, it showed AAPL close on `2020-01-02` around `72.33`, while Yahoo-style historical data for the same date lists raw split-adjusted close around `75.0875` and volume `135,480,400`. The client and tests were updated so future downloads request raw prices explicitly and use a new cache filename, preventing the adjusted cache from being reused silently.
 
 The feature tensor contains: `log_return`, `rsi_14`, `macd`, `macd_signal`, `macd_hist`, `bb_pct`, `vwap_dist`, `volume_norm`, `position`, and `unrealised_pnl`. Splits are chronological 70/15/15 with no shuffling. Feature calculations use rolling or exponentially weighted past data only; test data is not used for hyperparameter selection.
 
@@ -157,13 +160,13 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 - Add a metric by extending `BacktestResult` and `BacktestService.save`.
 
 ## Known Limitations
-- AAPL experiment results are committed; SPY failed locally due a yfinance/curl TLS certificate issue and should be rerun on a machine where Yahoo Finance TLS verification succeeds.
+- AAPL experiment results are committed; SPY and a refreshed live AAPL pull failed locally due a yfinance/curl TLS certificate issue and should be rerun on a machine where Yahoo Finance TLS verification succeeds or with valid CSV fallback files.
 - The model is intentionally compact for coursework and CPU feasibility.
 - Replay is regular replay, not prioritized replay.
 - README dashboard images are generated demonstration assets; the real Tkinter GUI was updated to match their styling more closely.
 
 ## GUI Guide
-Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. It includes tabs for market data, training curves, backtest equity curves, and a run log. It delegates all logic to `TradingSDK`, preserving the required architecture.
+Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. Use `Run Full Pipeline` for the clean demo path: it pulls/prepares prices, trains, backtests, predicts the latest action, and updates the market, training, and equity plots in one click. It delegates all logic to `TradingSDK`, preserving the required architecture.
 
 ## Visual Demonstration
 The images below are generated preview/demo assets committed under `assets/`. They demonstrate the GUI layout and expected plot types before running a real AAPL/SPY experiment; they are not claimed as real trading results.
@@ -189,7 +192,7 @@ uv run python scripts/generate_readme_assets.py
 ```
 
 ## Testing and TDD Notes
-The tests cover configuration, CSV fallback, feature engineering, chronological split, environment actions, reward penalties, replay sampling, Dueling network output shape, checkpoint saving, and SDK orchestration. Two TDD examples used here are the feature tensor shape test and invalid-action environment test: write failing expectation, implement minimal logic, then refactor into focused modules.
+The tests cover configuration, raw-price download arguments, CSV fallback, cache behavior, feature engineering, chronological split, environment actions, reward penalties, replay sampling, Dueling network output shape, checkpoint saving, backtest artifact writing, action masking, and SDK full-pipeline orchestration. Two TDD examples used here are the feature tensor shape test and invalid-action environment test: write failing expectation, implement minimal logic, then refactor into focused modules.
 
 ## Questions for Reflection
 1. `Q(s,a)` represents expected cumulative reward for an action, while a price forecast predicts a market value.

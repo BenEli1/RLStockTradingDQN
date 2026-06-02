@@ -29,3 +29,16 @@ def apply_dashboard_style(root: tk.Tk) -> None:
         background=[("active", "#1d4ed8"), ("pressed", "#1e40af")],
         foreground=[("disabled", "#dbeafe"), ("!disabled", "#ffffff")],
     )
+    style.configure(
+        "Primary.TButton",
+        padding=10,
+        background="#111827",
+        foreground="#ffffff",
+        bordercolor="#111827",
+        font=("Segoe UI", 10, "bold"),
+    )
+    style.map(
+        "Primary.TButton",
+        background=[("active", "#374151"), ("pressed", "#030712")],
+        foreground=[("disabled", "#e5e7eb"), ("!disabled", "#ffffff")],
+    )

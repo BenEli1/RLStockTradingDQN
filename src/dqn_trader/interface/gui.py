@@ -54,6 +54,12 @@ class TraderApp(tk.Tk):
             ttk.Button(controls, text=label, command=command, style="Accent.TButton").pack(
                 fill="x", pady=4
             )
+        ttk.Button(
+            controls,
+            text="Run Full Pipeline",
+            command=self._run_full_pipeline,
+            style="Primary.TButton",
+        ).pack(fill="x", pady=(12, 4))
         ttk.Separator(controls).pack(fill="x", pady=12)
         ttk.Label(controls, textvariable=self.summary, wraplength=190).pack(anchor="w")
         self.tabs = ttk.Notebook(shell)
@@ -84,6 +90,58 @@ class TraderApp(tk.Tk):
                 )
 
             return "Data prepared", update
+
+        self._run(task)
+
+    def _run_full_pipeline(self) -> None:
+        ticker = self.ticker.get()
+        episodes = int(self.episodes.get())
+
+        def task():
+            self.sdk.config["training"]["episodes"] = episodes
+            result = self.sdk.run_pipeline(ticker)
+            labels = ["SELL", "HOLD", "BUY"]
+            action, q_values = result.prediction
+            split_sizes = [len(part) for part in result.splits]
+            first_date = result.raw.index.min().date()
+            last_date = result.raw.index.max().date()
+            first_close = float(result.raw["Close"].iloc[0])
+            last_close = float(result.raw["Close"].iloc[-1])
+
+            def update() -> None:
+                self.data_chart.draw_lines(
+                    {"Close": result.raw["Close"].tolist()}, "Close Price", "Price"
+                )
+                self.training_chart.draw_dual_axis(
+                    {"Reward": result.training.rewards},
+                    {"Mean loss": result.training.episode_losses},
+                    "Training Reward and Mean Loss",
+                    "Episode reward",
+                    "Mean loss",
+                )
+                self.backtest_chart.draw_lines(
+                    {
+                        "DQN": result.backtest.equity_curve,
+                        "Buy-and-Hold": result.backtest.buy_hold_curve,
+                    },
+                    "Backtest Equity Curve",
+                    "Portfolio Value",
+                )
+                self.summary.set(
+                    f"{ticker.upper()} {first_date} -> {last_date}\n"
+                    f"Close: {first_close:.2f} -> {last_close:.2f}\n"
+                    f"Feature rows: {len(result.features)}\nSplit sizes: {split_sizes}\n"
+                    f"Prediction: {labels[action]}"
+                )
+
+            message = (
+                f"Full pipeline completed: {ticker.upper()} close={first_close:.2f}->{last_close:.2f}, "
+                f"return={result.backtest.total_return:.3f}, "
+                f"buy_hold={result.backtest.buy_hold_return:.3f}, "
+                f"executed_trades={result.backtest.trade_count}, prediction={labels[action]}, "
+                f"q_values={[round(value, 4) for value in q_values]}"
+            )
+            return message, update
 
         self._run(task)
 

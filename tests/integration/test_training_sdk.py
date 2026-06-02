@@ -34,3 +34,28 @@ def test_sdk_prepare_data_uses_client(monkeypatch, raw_frame):
     assert len(raw) == len(raw_frame)
     assert len(features) > 0
     assert len(splits) == 3
+
+
+def test_sdk_run_pipeline_orchestrates_full_workflow(monkeypatch, tmp_path, raw_frame):
+    monkeypatch.setattr(
+        "dqn_trader.data.client.YFinanceDataClient.load_daily",
+        lambda *_args, **_kwargs: raw_frame,
+    )
+    sdk = TradingSDK()
+    sdk.config["training"].update(
+        {
+            "episodes": 1,
+            "batch_size": 4,
+            "checkpoint_path": str(tmp_path / "model.pt"),
+            "replay_capacity": 100,
+            "epsilon_start": 0.1,
+            "epsilon_end": 0.05,
+            "epsilon_decay": 0.9,
+        }
+    )
+    result = sdk.run_pipeline("AAPL", output_dir=tmp_path)
+    assert len(result.raw) == len(raw_frame)
+    assert result.training.checkpoint_path.exists()
+    assert result.backtest.equity_curve
+    assert result.prediction[0] in {0, 1, 2}
+    assert (tmp_path / "backtest_metrics.json").exists()
