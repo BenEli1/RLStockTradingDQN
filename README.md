@@ -37,7 +37,7 @@ The GUI is the preferred way to demonstrate the project. It includes:
 - Latest-state action prediction.
 - One-click full pipeline: prepare data, train, backtest, predict, and update all plots.
 - One dashboard view with market data, training, and backtest plots visible together.
-- Run log and status output.
+- Always-visible run log and status output.
 
 ## Experiment Evidence and Work Report
 We ran compact local experiments to show the pipeline actually works and to document the development struggle honestly. The detailed report is here:
@@ -175,7 +175,7 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 - README dashboard images are generated demonstration assets; the real Tkinter GUI was updated to match their styling more closely.
 
 ## GUI Guide
-Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. Use `Run Full Pipeline` for the clean demo path: it pulls/prepares prices, trains, backtests, predicts the latest action, and updates the market, training, and equity plots in one dashboard. The Run Log tab records the current stage and rough timing expectations instead of only saying "Running". The GUI delegates all logic to `TradingSDK`, preserving the required architecture.
+Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. Use `Run Full Pipeline` for the clean demo path: it pulls/prepares prices, trains, backtests, predicts the latest action, and updates the market, training, and equity plots in one dashboard. The run log stays visible on the side and records the current stage and rough timing expectations instead of only saying "Running". The GUI delegates all logic to `TradingSDK`, preserving the required architecture.
 
 ## Visual Demonstration
 The dashboard image below is a safe controlled preview generated from the current Tkinter layout. It shows the real control structure, including ticker, episodes, Prepare Data, Train, Backtest, Predict, and Run Full Pipeline. It is not a desktop screenshot, so no personal windows or files are captured.
