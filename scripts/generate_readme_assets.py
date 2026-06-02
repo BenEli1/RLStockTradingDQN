@@ -25,17 +25,25 @@ def draw_dashboard_preview() -> None:
     draw.rectangle((28, 96, 292, 790), fill="#ffffff", outline="#d0d7de")
     draw.text((48, 122), "Run Controls", fill="#111827", font=font(22, True))
     for idx, label in enumerate(
-        ["Ticker: AAPL", "Episodes: 5", "Prepare Data", "Train", "Backtest", "Predict"]
+        [
+            "Ticker: AAPL",
+            "Episodes: 5",
+            "Prepare Data",
+            "Train",
+            "Backtest",
+            "Predict",
+            "Run Full Pipeline",
+        ]
     ):
-        y = 172 + idx * 66
-        color = "#e5edf7" if idx < 2 else "#2563eb"
+        y = 172 + idx * 58
+        color = "#e5edf7" if idx < 2 else "#111827" if idx == 6 else "#2563eb"
         text_color = "#111827" if idx < 2 else "#ffffff"
         draw.rounded_rectangle((48, y, 254, y + 42), radius=8, fill=color, outline="#c9d3df")
         draw.text((66, y + 11), label, fill=text_color, font=font(16, idx >= 2))
-    draw.text((48, 604), "Summary", fill="#111827", font=font(18, True))
+    draw.text((48, 616), "Summary", fill="#111827", font=font(18, True))
     draw.multiline_text(
-        (48, 634),
-        "Raw rows: 756\nFeature rows: 723\nSplit sizes:\n[506, 108, 109]",
+        (48, 646),
+        "AAPL 2020 -> 2023\nClose: 75.09 -> 129.93\nFeature rows: 723\nPrediction: HOLD",
         fill="#374151",
         font=font(15),
         spacing=8,
@@ -60,7 +68,7 @@ def draw_dashboard_preview() -> None:
     draw.rectangle((0, 790, 1280, 820), fill="#e5e7eb")
     draw.text(
         (34, 798),
-        "Preview image generated from the repository UI design; run `uv run dqn-trader gui` for the live app.",
+        "Controlled preview generated from the current UI layout; run `uv run dqn-trader gui` for the live app.",
         fill="#374151",
         font=font(14),
     )
@@ -91,12 +99,20 @@ def draw_demo_plots() -> None:
     save_line_plot(
         ASSETS / "demo_market_data.png", "Demo Market Data Chart", "Close Price", {"Close": close}
     )
-    save_line_plot(
-        ASSETS / "demo_training_curve.png",
-        "Demo Training Chart",
-        "Reward / Loss",
-        {"Reward": rewards, "Loss": losses},
-    )
+    figure, (reward_axis, loss_axis) = plt.subplots(2, 1, figsize=(9, 4.8), dpi=140, sharex=True)
+    reward_axis.plot(rewards, color="#2563eb", label="Reward")
+    reward_axis.set_title("Demo Training Chart")
+    reward_axis.set_ylabel("Reward")
+    reward_axis.grid(True, alpha=0.25)
+    reward_axis.legend()
+    loss_axis.plot(losses[: len(rewards)], color="#f97316", label="Mean loss")
+    loss_axis.set_xlabel("Episode")
+    loss_axis.set_ylabel("Mean loss")
+    loss_axis.grid(True, alpha=0.25)
+    loss_axis.legend()
+    figure.tight_layout()
+    figure.savefig(ASSETS / "demo_training_curve.png")
+    plt.close(figure)
     save_line_plot(
         ASSETS / "demo_backtest_equity.png",
         "Demo Backtest Equity Chart",

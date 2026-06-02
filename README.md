@@ -178,19 +178,15 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. Use `Run Full Pipeline` for the clean demo path: it pulls/prepares prices, trains, backtests, predicts the latest action, and updates the market, training, and equity plots in one click. It delegates all logic to `TradingSDK`, preserving the required architecture.
 
 ## Visual Demonstration
-The images below are generated preview/demo assets committed under `assets/`. They demonstrate the GUI layout and expected plot types before running a real AAPL/SPY experiment; they are not claimed as real trading results.
+The dashboard image below is a safe controlled preview generated from the current Tkinter layout. It shows the real control structure, including ticker, episodes, Prepare Data, Train, Backtest, Predict, and Run Full Pipeline. It is not a desktop screenshot, so no personal windows or files are captured.
 
 ![Tkinter dashboard preview](assets/gui_dashboard_preview.png)
 
-Market data plot type:
+The next images demonstrate the plot types shown by the GUI. Real experiment plots are shown earlier in the README under the AAPL experiment section.
 
 ![Demo market data chart](assets/demo_market_data.png)
 
-Training plot type:
-
 ![Demo training chart](assets/demo_training_curve.png)
-
-Backtest plot type:
 
 ![Demo backtest equity chart](assets/demo_backtest_equity.png)
 

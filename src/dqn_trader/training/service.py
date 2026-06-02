@@ -116,19 +116,19 @@ class TrainingService:
             ),
             encoding="utf-8",
         )
-        figure, axis_reward = plt.subplots(figsize=(8, 4))
-        axis_reward.plot(rewards, label="episode reward", color="#2563eb")
+        figure, (axis_reward, axis_loss) = plt.subplots(2, 1, figsize=(8, 5), sharex=True)
+        axis_reward.plot(rewards, label="episode reward", color="#2563eb", marker="o")
+        axis_reward.set_title("Training Reward and Mean Loss")
         axis_reward.set_xlabel("Episode")
         axis_reward.set_ylabel("Reward")
         axis_reward.grid(True, alpha=0.25)
+        axis_reward.legend(loc="best")
         if episode_losses:
-            axis_loss = axis_reward.twinx()
-            axis_loss.plot(episode_losses, label="mean loss", color="#f97316", alpha=0.85)
-            axis_loss.set_ylabel("Mean loss")
-            lines = axis_reward.lines + axis_loss.lines
-            axis_reward.legend(lines, [line.get_label() for line in lines], loc="best")
-        else:
-            axis_reward.legend(loc="best")
+            axis_loss.plot(episode_losses, label="mean loss", color="#f97316", marker="s")
+        axis_loss.set_xlabel("Episode")
+        axis_loss.set_ylabel("Mean loss")
+        axis_loss.grid(True, alpha=0.25)
+        axis_loss.legend(loc="best")
         plt.tight_layout()
         plt.savefig(results_dir / "training_curve.png")
         plt.close()
