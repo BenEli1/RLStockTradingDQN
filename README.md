@@ -21,7 +21,7 @@ Current local validation after the latest experiment/report pass:
 
 - `ruff check`: passed
 - `ruff format --check`: passed
-- `pytest`: 24 tests passed, `96.60%` coverage
+- `pytest`: 25 tests passed, coverage above 95%
 
 ## Run the GUI
 ```powershell
@@ -65,9 +65,29 @@ Summary of the real local run:
 | AAPL basic reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3244 | 63 |
 | SPY risk-adjusted | SPY | risk_adjusted | 5 | failed locally | failed locally | failed locally | failed locally | failed locally | failed locally |
 
-The SPY comparison was attempted but failed on this machine because yfinance/curl hit a TLS certificate verification problem. That failure is recorded in the report instead of hidden. The project still supports SPY/NVDA through the same data path when network certificates work or when CSV fallback files are provided.
+The initial SPY comparison failed when only `yfinance.download` was available on this machine because yfinance/curl hit a TLS certificate verification problem. The data client was later improved with a secondary Yahoo Chart API fallback, still using Yahoo Finance data, so broader research could run without manual CSV files.
 
 Important conclusion: these short five-episode runs validate the RL pipeline, reward comparison, plotting, checkpointing, and backtest metrics. They are not proof of a profitable trading strategy.
+
+## Multi-Stock Research
+To show that the implementation was not checked only on one or two symbols, the same Dueling DQN pipeline was also run on ten well-known assets across technology, media, consumer, cybersecurity, healthcare, and a market ETF.
+
+Detailed report: [results/multi_stock/REPORT.md](results/multi_stock/REPORT.md)
+
+| Ticker | Company / Asset | Sector | Episodes | DQN Return | Buy/Hold | Sharpe | Max Drawdown | Trades | Prediction |
+|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| AAPL | Apple | Technology | 3 | 0.9202 | 0.8651 | 0.8880 | -0.3075 | 9 | BUY |
+| NVDA | NVIDIA | Semiconductors / AI | 3 | 6.6081 | 1.4253 | 1.8983 | -0.3521 | 250 | HOLD |
+| NFLX | Netflix | Streaming media | 3 | -0.0966 | -0.1343 | 0.1755 | -0.7248 | 23 | HOLD |
+| META | Meta Platforms | Social media | 3 | -0.1689 | -0.2938 | 0.0837 | -0.7368 | 77 | HOLD |
+| SPY | S&P 500 ETF | Market ETF | 3 | 1.3913 | 0.4237 | 2.0071 | -0.0964 | 178 | BUY |
+| AMZN | Amazon | E-commerce / cloud | 3 | 0.3786 | -0.0568 | 0.4958 | -0.4694 | 53 | HOLD |
+| MCD | McDonald's | Consumer staples / restaurants | 3 | 0.1662 | 0.5013 | 0.5144 | -0.0767 | 6 | HOLD |
+| KO | Coca-Cola | Consumer staples | 3 | 1.6473 | 0.3194 | 1.8672 | -0.1783 | 236 | BUY |
+| CRWD | CrowdStrike | Cybersecurity | 3 | 1.5637 | 1.6440 | 0.8651 | -0.6590 | 5 | BUY |
+| PFE | Pfizer | Healthcare / pharmaceuticals | 3 | 1.3866 | 0.6540 | 1.6787 | -0.1975 | 99 | BUY |
+
+These are compact three-episode diagnostic runs. They show the same algorithm executing across a broader dataset, not a recommendation to trade any of these assets.
 
 Actual AAPL risk-adjusted training and backtest plots:
 
@@ -90,6 +110,7 @@ uv run dqn-trader train --ticker AAPL
 uv run dqn-trader backtest --ticker AAPL
 uv run dqn-trader predict --ticker AAPL
 uv run python scripts/run_experiments.py
+uv run python scripts/run_multi_stock_research.py
 ```
 
 ## RL Mapping
@@ -173,7 +194,7 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 - Add a metric by extending `BacktestResult` and `BacktestService.save`.
 
 ## Known Limitations
-- AAPL experiment results are committed; SPY and a refreshed live AAPL pull failed locally due a yfinance/curl TLS certificate issue and should be rerun on a machine where Yahoo Finance TLS verification succeeds or with valid CSV fallback files.
+- A secondary Yahoo Chart API fallback was added because yfinance/curl had TLS problems on this machine for some symbols.
 - The model is intentionally compact for coursework and CPU feasibility.
 - Replay is regular replay, not prioritized replay.
 - The main GUI screenshot is an actual completed local run; the smaller chart images are demo or experiment artifacts as labeled.

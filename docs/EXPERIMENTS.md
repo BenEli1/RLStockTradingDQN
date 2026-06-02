@@ -36,3 +36,30 @@ The full generated report is committed at `results/experiments/REPORT.md`. The r
 ## Critical Conclusion
 
 The short runs demonstrate that the code path works end-to-end, but they are not enough to claim a robust trading policy. The basic reward traded more often than the risk-adjusted reward, which supports the assignment's warning that reward design affects behavior. SPY failed locally because yfinance/curl could not verify the TLS certificate; this should be rerun with working network certificates or a CSV fallback.
+
+## Multi-Stock Research Pass
+
+A broader research pass was added with:
+
+```powershell
+uv run python scripts/run_multi_stock_research.py
+```
+
+The report is committed at `results/multi_stock/REPORT.md`.
+
+This pass runs the same Dueling DQN pipeline on:
+
+| Ticker | Company / Asset | Sector |
+|---|---|---|
+| AAPL | Apple | Technology |
+| NVDA | NVIDIA | Semiconductors / AI |
+| NFLX | Netflix | Streaming media |
+| META | Meta Platforms | Social media |
+| SPY | S&P 500 ETF | Market ETF |
+| AMZN | Amazon | E-commerce / cloud |
+| MCD | McDonald's | Consumer staples / restaurants |
+| KO | Coca-Cola | Consumer staples |
+| CRWD | CrowdStrike | Cybersecurity |
+| PFE | Pfizer | Healthcare / pharmaceuticals |
+
+The multi-stock pass uses compact three-episode runs, so it is research coverage and engineering evidence rather than a profitability claim. It was useful because the same implementation had to handle different volatility profiles, sectors, and return histories.

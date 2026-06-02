@@ -14,7 +14,7 @@ This document maps the Homework 02 requirements and previous-feedback criteria t
 | 30 x 10 state tensor | Pass | `config/setup.yaml`, `FeatureEngineer`, tests |
 | yfinance/Yahoo Finance data path | Pass with local TLS limitation | `YFinanceDataClient`; README limitation |
 | AAPL 2020-01-01 to 2023-01-01 | Pass | `config/setup.yaml`, experiment report |
-| SPY/NVDA comparison attempt | Partial / documented | SPY attempted; failed due local TLS certificate issue; documented in `docs/EXPERIMENTS.md` |
+| SPY/NVDA comparison and broader research | Pass | `results/multi_stock/REPORT.md` includes SPY, NVDA, and eight additional assets |
 | Parquet cache and CSV fallback | Pass | `YFinanceDataClient`, `tests/unit/test_data_client.py` |
 | Raw OHLCV validation | Pass | `auto_adjust=False` test and README price note |
 | Chronological split, no shuffle | Pass | `FeatureEngineer.chronological_split`, tests |
@@ -35,7 +35,6 @@ This document maps the Homework 02 requirements and previous-feedback criteria t
 
 ## Still Risky / Manual Review
 
-- Live yfinance calls on this machine can fail because curl cannot verify the local certificate chain. The code supports Yahoo download and CSV fallback, but a grader running in a different environment may need working certificates or a valid `data/raw/{ticker}.csv` fallback.
+- Live yfinance calls on this machine can fail because curl cannot verify the local certificate chain. The code now also supports a secondary Yahoo Chart API fallback plus CSV fallback.
 - The experiments are intentionally short five-episode coursework diagnostics. They show pipeline behavior and reward-design effects, not a robust profitable trading strategy.
 - The GUI screenshots in `assets/` are demonstration assets. Real experiment plots are committed under `results/experiments/`.
-

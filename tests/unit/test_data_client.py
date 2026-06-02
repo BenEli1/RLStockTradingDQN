@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import pytest
 
@@ -24,6 +26,10 @@ def test_client_uses_csv_fallback_when_download_fails(monkeypatch, tmp_path, raw
         raise RuntimeError("offline")
 
     monkeypatch.setattr("dqn_trader.data.client.yf.download", fail_download)
+    monkeypatch.setattr(
+        "dqn_trader.data.client.urllib.request.urlopen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("chart offline")),
+    )
     raw_frame.to_csv(tmp_path / "AAPL.csv", index_label="Date")
     loaded = YFinanceDataClient(tmp_path).load_daily("AAPL", "2020-01-01", "2023-01-01")
     pd.testing.assert_frame_equal(loaded, raw_frame, check_freq=False)
@@ -46,10 +52,48 @@ def test_client_flattens_yfinance_multiindex(monkeypatch, tmp_path, raw_frame):
     pd.testing.assert_frame_equal(loaded, raw_frame)
 
 
+def test_client_uses_yahoo_chart_fallback(monkeypatch, tmp_path, raw_frame):
+    class Response:
+        def __enter__(self):
+            timestamps = [int(value.timestamp()) for value in raw_frame.index]
+            quote = {
+                "open": raw_frame["Open"].tolist(),
+                "high": raw_frame["High"].tolist(),
+                "low": raw_frame["Low"].tolist(),
+                "close": raw_frame["Close"].tolist(),
+                "volume": raw_frame["Volume"].tolist(),
+            }
+            payload = {
+                "chart": {"result": [{"timestamp": timestamps, "indicators": {"quote": [quote]}}]}
+            }
+            self.payload = json.dumps(payload).encode()
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return self.payload
+
+    monkeypatch.setattr(
+        "dqn_trader.data.client.yf.download",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("offline")),
+    )
+    monkeypatch.setattr(
+        "dqn_trader.data.client.urllib.request.urlopen", lambda *_args, **_kwargs: Response()
+    )
+    loaded = YFinanceDataClient(tmp_path).load_daily("AAPL", "2020-01-01", "2023-01-01")
+    pd.testing.assert_frame_equal(loaded, raw_frame, check_freq=False, check_index_type=False)
+
+
 def test_client_raises_when_download_and_fallback_fail(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "dqn_trader.data.client.yf.download",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("network")),
+    )
+    monkeypatch.setattr(
+        "dqn_trader.data.client.urllib.request.urlopen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("chart")),
     )
     with pytest.raises(ValueError, match="network"):
         YFinanceDataClient(tmp_path).load_daily("AAPL", "2020-01-01", "2023-01-01")
