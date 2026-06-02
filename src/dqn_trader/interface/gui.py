@@ -13,8 +13,8 @@ class TraderApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("DQN Trader SDK - Assignment 02")
-        self.geometry("1260x820")
-        self.minsize(1080, 720)
+        self.geometry("1280x760")
+        self.minsize(1120, 680)
         self.sdk = TradingSDK()
         self.ticker = tk.StringVar(value=self.sdk.config["data"]["ticker"])
         self.episodes = tk.StringVar(value=str(self.sdk.config["training"]["episodes"]))
@@ -24,27 +24,16 @@ class TraderApp(tk.Tk):
 
     def _build(self) -> None:
         apply_dashboard_style(self)
-        header = tk.Frame(self, bg="#1f2937", height=72)
-        header.pack(fill="x")
-        tk.Label(
-            header,
-            text="DQN Trader SDK - Tkinter Dashboard",
-            bg="#1f2937",
-            fg="#ffffff",
-            font=("Segoe UI", 20, "bold"),
-            padx=24,
-            pady=18,
-        ).pack(anchor="w")
-        shell = ttk.Frame(self, padding=16)
+        shell = ttk.Frame(self, padding=8)
         shell.pack(fill="both", expand=True)
         shell.columnconfigure(1, weight=1)
-        shell.rowconfigure(1, weight=1)
-        controls = ttk.LabelFrame(shell, text="Run Controls", padding=12)
-        controls.grid(row=0, column=0, sticky="ns", padx=(0, 14))
+        shell.rowconfigure(0, weight=1)
+        controls = ttk.LabelFrame(shell, text="Run Controls", padding=8)
+        controls.grid(row=0, column=0, sticky="ns", padx=(0, 10))
         ttk.Label(controls, text="Ticker").pack(anchor="w")
-        ttk.Entry(controls, textvariable=self.ticker, width=16).pack(fill="x", pady=(0, 10))
+        ttk.Entry(controls, textvariable=self.ticker, width=14).pack(fill="x", pady=(0, 8))
         ttk.Label(controls, text="Episodes").pack(anchor="w")
-        ttk.Entry(controls, textvariable=self.episodes, width=16).pack(fill="x", pady=(0, 14))
+        ttk.Entry(controls, textvariable=self.episodes, width=14).pack(fill="x", pady=(0, 10))
         for label, command in [
             ("Prepare Data", self._prepare),
             ("Train", self._train),
@@ -52,23 +41,23 @@ class TraderApp(tk.Tk):
             ("Predict", self._predict),
         ]:
             ttk.Button(controls, text=label, command=command, style="Accent.TButton").pack(
-                fill="x", pady=4
+                fill="x", pady=3
             )
         ttk.Button(
             controls,
             text="Run Full Pipeline",
             command=self._run_full_pipeline,
             style="Primary.TButton",
-        ).pack(fill="x", pady=(12, 4))
-        ttk.Separator(controls).pack(fill="x", pady=12)
-        ttk.Label(controls, textvariable=self.summary, wraplength=190).pack(anchor="w")
+        ).pack(fill="x", pady=(9, 4))
+        ttk.Separator(controls).pack(fill="x", pady=9)
+        ttk.Label(controls, textvariable=self.summary, wraplength=170).pack(anchor="w")
         self.tabs = ttk.Notebook(shell)
         self.tabs.grid(row=0, column=1, sticky="nsew")
-        dashboard = ttk.Frame(self.tabs, padding=10)
+        dashboard = ttk.Frame(self.tabs, padding=6)
         dashboard.columnconfigure(0, weight=1)
         dashboard.columnconfigure(1, weight=1)
-        dashboard.rowconfigure(0, weight=1)
-        dashboard.rowconfigure(1, weight=1)
+        dashboard.rowconfigure(0, weight=2)
+        dashboard.rowconfigure(1, weight=3)
         self.tabs.add(dashboard, text="Dashboard")
         self.data_chart = self._dashboard_chart(dashboard, "Market Data", 0, 0)
         self.training_chart = self._dashboard_chart(dashboard, "Training", 0, 1)
@@ -79,7 +68,7 @@ class TraderApp(tk.Tk):
         self.log = tk.Text(self.tabs, height=8, wrap="word")
         self.tabs.add(self.log, text="Run Log")
         ttk.Label(shell, textvariable=self.status, style="Status.TLabel").grid(
-            row=1, column=0, columnspan=2, sticky="ew", pady=(12, 0)
+            row=1, column=0, columnspan=2, sticky="ew", pady=(6, 0)
         )
         self._write_log(
             "Ready. Use Run Full Pipeline for the complete demo, or run each stage manually."
@@ -232,7 +221,6 @@ class TraderApp(tk.Tk):
     def _run(self, func) -> None:
         def worker() -> None:
             try:
-                self.after(0, self.status.set, "Running...")
                 message, update = func()
                 self.after(0, self._finish_run, message, update)
             except Exception as exc:
@@ -254,7 +242,7 @@ class TraderApp(tk.Tk):
         self, parent: ttk.Frame, label: str, row: int, column: int, columnspan: int = 1
     ) -> ChartPanel:
         frame = ttk.LabelFrame(parent, text=label, padding=8)
-        frame.grid(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=6, pady=6)
+        frame.grid(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=4, pady=4)
         chart = ChartPanel(frame, label)
         return chart
 

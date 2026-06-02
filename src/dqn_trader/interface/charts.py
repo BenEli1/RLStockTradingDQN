@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 
 class ChartPanel:
     def __init__(self, parent, title: str) -> None:
-        self.figure = Figure(figsize=(7.2, 3.8), dpi=100)
+        self.figure = Figure(figsize=(6.8, 2.8), dpi=100)
         self.axis = self.figure.add_subplot(111)
         self.secondary_axis = None
         self.axis.set_title(title)
