@@ -13,8 +13,8 @@ class TraderApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("DQN Trader SDK - Assignment 02")
-        self.geometry("1120x720")
-        self.minsize(980, 640)
+        self.geometry("1260x820")
+        self.minsize(1080, 720)
         self.sdk = TradingSDK()
         self.ticker = tk.StringVar(value=self.sdk.config["data"]["ticker"])
         self.episodes = tk.StringVar(value=str(self.sdk.config["training"]["episodes"]))
@@ -64,20 +64,32 @@ class TraderApp(tk.Tk):
         ttk.Label(controls, textvariable=self.summary, wraplength=190).pack(anchor="w")
         self.tabs = ttk.Notebook(shell)
         self.tabs.grid(row=0, column=1, sticky="nsew")
-        self.data_chart = self._tab("Market Data", "Close price")
-        self.training_chart = self._tab("Training", "Episode reward / loss")
-        self.backtest_chart = self._tab("Backtest", "Equity curve")
+        dashboard = ttk.Frame(self.tabs, padding=10)
+        dashboard.columnconfigure(0, weight=1)
+        dashboard.columnconfigure(1, weight=1)
+        dashboard.rowconfigure(0, weight=1)
+        dashboard.rowconfigure(1, weight=1)
+        self.tabs.add(dashboard, text="Dashboard")
+        self.data_chart = self._dashboard_chart(dashboard, "Market Data", 0, 0)
+        self.training_chart = self._dashboard_chart(dashboard, "Training", 0, 1)
+        self.backtest_chart = self._dashboard_chart(dashboard, "Backtest", 1, 0, columnspan=2)
+        self.data_chart.draw_empty("Prepare data to show close prices")
+        self.training_chart.draw_empty("Train to show reward and mean loss")
+        self.backtest_chart.draw_empty("Backtest to show DQN vs Buy-and-Hold equity")
         self.log = tk.Text(self.tabs, height=8, wrap="word")
         self.tabs.add(self.log, text="Run Log")
         ttk.Label(shell, textvariable=self.status, style="Status.TLabel").grid(
             row=1, column=0, columnspan=2, sticky="ew", pady=(12, 0)
         )
-        self._write_log("Ready. Use Prepare Data first, then Train and Backtest.")
+        self._write_log(
+            "Ready. Use Run Full Pipeline for the complete demo, or run each stage manually."
+        )
 
     def _prepare(self) -> None:
         ticker = self.ticker.get()
 
         def task():
+            self._progress("Preparing market data and features. Usually a few seconds if cached.")
             raw, features, splits = self.sdk.prepare_data(ticker)
             close_values = raw["Close"].tolist()
             split_sizes = [len(part) for part in splits]
@@ -89,7 +101,7 @@ class TraderApp(tk.Tk):
                     f"Split sizes: {split_sizes}"
                 )
 
-            return "Data prepared", update
+            return "Data prepared. Market chart and split summary updated.", update
 
         self._run(task)
 
@@ -98,8 +110,12 @@ class TraderApp(tk.Tk):
         episodes = int(self.episodes.get())
 
         def task():
+            self._progress(
+                f"Full pipeline started for {ticker.upper()}: data -> train -> backtest -> predict."
+            )
             self.sdk.config["training"]["episodes"] = episodes
-            result = self.sdk.run_pipeline(ticker)
+            result = self.sdk.run_pipeline(ticker, progress=self._progress)
+            self._progress(f"Complete: finished training/backtest/prediction for {ticker.upper()}.")
             labels = ["SELL", "HOLD", "BUY"]
             action, q_values = result.prediction
             split_sizes = [len(part) for part in result.splits]
@@ -150,6 +166,10 @@ class TraderApp(tk.Tk):
         episodes = int(self.episodes.get())
 
         def task():
+            self._progress(
+                f"Training {ticker.upper()} for {episodes} episodes. "
+                "On CPU this can take roughly 10-60 seconds for the default setup."
+            )
             self.sdk.config["training"]["episodes"] = episodes
             result = self.sdk.train(ticker)
 
@@ -170,6 +190,7 @@ class TraderApp(tk.Tk):
         ticker = self.ticker.get()
 
         def task():
+            self._progress("Running deterministic backtest. Usually a few seconds after training.")
             result = self.sdk.backtest(ticker)
 
             def update() -> None:
@@ -193,6 +214,9 @@ class TraderApp(tk.Tk):
         ticker = self.ticker.get()
 
         def task():
+            self._progress(
+                "Predicting latest available dataset state. This is not a 2026-live pull."
+            )
             action, q_values = self.sdk.predict_latest(ticker)
             labels = ["SELL", "HOLD", "BUY"]
             ordered = sorted(q_values, reverse=True)
@@ -216,17 +240,22 @@ class TraderApp(tk.Tk):
 
         threading.Thread(target=worker, daemon=True).start()
 
+    def _progress(self, message: str) -> None:
+        self.after(0, self.status.set, message)
+        self.after(0, self._write_log, message)
+
     def _finish_run(self, message: str, update) -> None:
         if update is not None:
             update()
         self.status.set(message)
         self._write_log(message)
 
-    def _tab(self, label: str, empty_message: str) -> ChartPanel:
-        frame = ttk.Frame(self.tabs, padding=10)
-        self.tabs.add(frame, text=label)
+    def _dashboard_chart(
+        self, parent: ttk.Frame, label: str, row: int, column: int, columnspan: int = 1
+    ) -> ChartPanel:
+        frame = ttk.LabelFrame(parent, text=label, padding=8)
+        frame.grid(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=6, pady=6)
         chart = ChartPanel(frame, label)
-        chart.draw_empty(empty_message)
         return chart
 
     def _write_log(self, text: str) -> None:

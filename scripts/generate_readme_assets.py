@@ -49,22 +49,45 @@ def draw_dashboard_preview() -> None:
         spacing=8,
     )
     draw.rectangle((320, 96, 1240, 790), fill="#ffffff", outline="#d0d7de")
-    tabs = ["Market Data", "Training", "Backtest", "Run Log"]
+    tabs = ["Dashboard", "Run Log"]
     for i, tab in enumerate(tabs):
         x = 338 + i * 150
         draw.rounded_rectangle((x, 116, x + 136, 154), radius=8, fill="#e5edf7", outline="#c9d3df")
         draw.text((x + 16, 126), tab, fill="#111827", font=font(15, True))
-    draw.rectangle((354, 182, 1208, 742), fill="#fbfdff", outline="#d0d7de")
-    x_values = np.linspace(0, 1, 180)
-    y_values = 0.5 + 0.22 * np.sin(10 * x_values) + 0.17 * x_values
-    points = [
-        (380 + int(x * 790), 620 - int(y * 360)) for x, y in zip(x_values, y_values, strict=True)
+
+    panels = [
+        (354, 182, 772, 430, "Market Data"),
+        (790, 182, 1208, 430, "Training"),
+        (354, 454, 1208, 742, "Backtest"),
     ]
-    draw.line(points, fill="#2563eb", width=4)
-    draw.text((378, 206), "Embedded plot area", fill="#111827", font=font(20, True))
-    draw.text(
-        (378, 234), "Charts update after Prepare / Train / Backtest.", fill="#4b5563", font=font(16)
-    )
+    for x1, y1, x2, y2, title in panels:
+        draw.rectangle((x1, y1, x2, y2), fill="#fbfdff", outline="#d0d7de")
+        draw.text((x1 + 18, y1 + 16), title, fill="#111827", font=font(18, True))
+
+    x_values = np.linspace(0, 1, 180)
+    market = 0.45 + 0.18 * np.sin(8 * x_values) + 0.18 * x_values
+    reward = 0.55 + 0.12 * np.sin(15 * x_values)
+    backtest_a = 0.45 + 0.15 * np.sin(10 * x_values) + 0.22 * x_values
+    backtest_b = 0.42 + 0.12 * np.sin(9 * x_values) + 0.13 * x_values
+    market_points = [
+        (376 + int(x * 360), 392 - int(y * 170)) for x, y in zip(x_values, market, strict=True)
+    ]
+    reward_points = [
+        (812 + int(x * 360), 392 - int(y * 170)) for x, y in zip(x_values, reward, strict=True)
+    ]
+    backtest_points_a = [
+        (380 + int(x * 790), 702 - int(y * 210)) for x, y in zip(x_values, backtest_a, strict=True)
+    ]
+    backtest_points_b = [
+        (380 + int(x * 790), 702 - int(y * 210)) for x, y in zip(x_values, backtest_b, strict=True)
+    ]
+    draw.line(market_points, fill="#2563eb", width=4)
+    draw.line(reward_points, fill="#f97316", width=4)
+    draw.line(backtest_points_a, fill="#2563eb", width=4)
+    draw.line(backtest_points_b, fill="#f97316", width=3)
+    draw.text((378, 232), "Close price", fill="#4b5563", font=font(15))
+    draw.text((814, 232), "Reward + mean loss", fill="#4b5563", font=font(15))
+    draw.text((378, 504), "DQN vs Buy-and-Hold equity", fill="#4b5563", font=font(15))
     draw.rectangle((0, 790, 1280, 820), fill="#e5e7eb")
     draw.text(
         (34, 798),

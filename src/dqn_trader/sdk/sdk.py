@@ -1,5 +1,6 @@
 """Single entry point for data, training, evaluation, and inference."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -78,15 +79,24 @@ class TradingSDK:
         ticker: str | None = None,
         reward_mode: str = "risk_adjusted",
         output_dir: Path = Path("results"),
+        progress: Callable[[str], None] | None = None,
     ) -> PipelineResult:
+        if progress is not None:
+            progress("Stage 1/4: preparing data and calculating features.")
         raw, features, splits = self.prepare_data(ticker)
+        if progress is not None:
+            progress("Stage 2/4: training Dueling DQN and saving the best checkpoint.")
         env = self.make_env(features, raw, reward_mode)
         checkpoint = Path(self.config["training"]["checkpoint_path"])
         training = TrainingService(self.config["training"]).train(env, checkpoint)
+        if progress is not None:
+            progress("Stage 3/4: running deterministic backtest against Buy-and-Hold.")
         model = self._load_model()
         backtest_env = self.make_env(features, raw, reward_mode)
         backtest = BacktestService().run(backtest_env, model)
         BacktestService.save(backtest, output_dir)
+        if progress is not None:
+            progress("Stage 4/4: predicting the latest available dataset state.")
         window_size = self.config["features"]["window_size"]
         state = features.tail(window_size)[FEATURE_COLUMNS].to_numpy(dtype="float32")
         prediction = InferenceService.predict(model, state, has_position=False)
