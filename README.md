@@ -44,6 +44,15 @@ We ran compact local experiments to show the pipeline actually works and to docu
 
 [results/experiments/REPORT.md](results/experiments/REPORT.md)
 
+Submission-process evidence is also documented:
+
+- [Assessment coverage matrix](docs/ASSESSMENT_COVERAGE.md)
+- [AI-assisted workflow](docs/AI_WORKFLOW.md)
+- [AI chat and iteration log](docs/AI_CHAT_LOG.md)
+- [Source control and progress evidence](docs/SOURCE_CONTROL.md)
+- [Cost and resource analysis](docs/COST_ANALYSIS.md)
+- [Version history](docs/VERSION_HISTORY.md)
+
 Summary of the real local run:
 
 | Run | Ticker | Reward | Episodes | DQN Return | Buy/Hold Return | Sharpe | Max Drawdown | Win Rate | Trades |

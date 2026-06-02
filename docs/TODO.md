@@ -15,5 +15,12 @@
 | Done | Medium | Add richer backtest metrics | Buy-and-Hold, Sharpe, drawdown, win rate, and trade count are reported |
 | Done | Medium | Improve GUI presentation | GUI includes tabs, run log, status, and embedded charts |
 | Done | Medium | Add RL tutorial | Code-connected tutorial explains Q-table, DQN, tensors, rewards, and backtesting |
-| Pending | Medium | Run full AAPL/SPY experiments | Requires dependency sync and optional network access |
-| Pending | Medium | Add screenshots to README | Capture after running GUI and plots |
+| Done | Medium | Fix misleading training chart | Reward and per-episode mean loss are plotted on separate axes |
+| Done | Medium | Add one-click GUI pipeline | One button prepares data, trains, backtests, predicts, and updates plots |
+| Done | Medium | Validate raw price data path | Data client uses `auto_adjust=False` and tests enforce it |
+| Done | Medium | Add source-control evidence | GitHub URL and commit timeline are documented |
+| Done | Medium | Add AI chat/process evidence | AI-assisted workflow and chat summary are documented |
+| Done | Medium | Add assessment coverage matrix | Requirements and feedback criteria are mapped to files |
+| Done | Medium | Add screenshots/plots to README | Demo GUI assets and real experiment plots are referenced |
+| Blocked | Medium | Rerun SPY experiment locally | Blocked by local yfinance/curl TLS certificate verification |
+| Pending | Low | Run longer research experiments | Increase episodes and possibly compare more tickers after submission timing allows |

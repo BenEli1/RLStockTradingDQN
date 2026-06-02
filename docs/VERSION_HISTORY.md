@@ -13,3 +13,11 @@
 - Added Buy-and-Hold, Sharpe ratio, and trade count to backtest output.
 - Added AI workflow, cost/resource analysis, version history, and experiment-summary documentation.
 - Clarified limitations and avoided claiming unrun experiment results.
+
+## Submission Evidence Pass
+- Added readable training charts with per-episode loss aggregation.
+- Added executable-action masking for backtest and latest prediction.
+- Added one-click GUI pipeline through `TradingSDK.run_pipeline()`.
+- Added raw-price validation with `auto_adjust=False` and `_raw.parquet` cache naming.
+- Added assessment coverage, AI chat/process log, and source-control evidence documentation.
+- Raised automated test coverage to 96.60% with 24 passing tests.
