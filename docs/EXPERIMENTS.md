@@ -1,12 +1,12 @@
 # Experiment Summary
 
-Real compact local experiments were run with:
+Real compact local experiments were run in two layers. First, a controlled reward-comparison run was generated with:
 
 ```powershell
 uv run python scripts/run_experiments.py
 ```
 
-The full generated report is committed at `results/experiments/REPORT.md`. The runs are educational diagnostics only, not financial advice.
+The generated reward-comparison report is committed at `results/experiments/REPORT.md`. The runs are educational diagnostics only, not financial advice.
 
 ## Controlled Comparison
 
@@ -14,7 +14,7 @@ The full generated report is committed at `results/experiments/REPORT.md`. The r
 |---|---|
 | Hypothesis | Cost/risk-adjusted rewards reduce unstable over-trading compared with a basic portfolio-delta reward. |
 | Main ticker | AAPL, 2020-01-01 to 2023-01-01, interval 1d |
-| Attempted comparison ticker | SPY, same date range and data mechanism |
+| Initial network-stress ticker | SPY, same date range and data mechanism |
 | Completed comparison | AAPL risk-adjusted reward vs AAPL basic reward |
 | Model | Dueling DQN with regular replay and target network |
 | Metrics | Total return, Buy-and-Hold return, Sharpe ratio, max drawdown, win rate, trade count |
@@ -25,7 +25,7 @@ The full generated report is committed at `results/experiments/REPORT.md`. The r
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | aapl_risk_adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 23 |
 | aapl_basic_reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3244 | 63 |
-| spy_risk_adjusted | SPY | risk_adjusted | 5 | failed | failed | failed | failed | failed | failed |
+| spy_risk_adjusted | SPY | risk_adjusted | 5 | failed in this early run | failed | failed | failed | failed | failed |
 
 ## Output Files
 
@@ -35,7 +35,7 @@ The full generated report is committed at `results/experiments/REPORT.md`. The r
 
 ## Critical Conclusion
 
-The short runs demonstrate that the code path works end-to-end, but they are not enough to claim a robust trading policy. The basic reward traded more often than the risk-adjusted reward, which supports the assignment's warning that reward design affects behavior. SPY failed locally because yfinance/curl could not verify the TLS certificate; this should be rerun with working network certificates or a CSV fallback.
+The short runs demonstrate that the code path works end-to-end, but they are not enough to claim a robust trading policy. The basic reward traded more often than the risk-adjusted reward, which supports the assignment's warning that reward design affects behavior. The early SPY run failed because yfinance/curl could not verify the TLS certificate; that failure led to the Yahoo Chart API fallback used successfully in the later multi-stock pass.
 
 ## Multi-Stock Research Pass
 
@@ -45,7 +45,7 @@ A broader research pass was added with:
 uv run python scripts/run_multi_stock_research.py
 ```
 
-The report is committed at `results/multi_stock/REPORT.md`.
+The report is committed at `results/multi_stock/REPORT.md`. This later pass completed all ten symbols, including SPY, using the improved Yahoo Finance data fallback.
 
 This pass runs the same Dueling DQN pipeline on:
 

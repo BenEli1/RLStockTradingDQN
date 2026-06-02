@@ -13,7 +13,7 @@ Approximate resource profile for the submitted configuration:
 | Training episodes | 5 by default | Keeps demos short for coursework and avoids long CPU runs. |
 | Model | Compact Dueling DQN MLP | Avoids GPU requirement. |
 | Data frequency | Daily OHLCV | Much cheaper than intraday data in storage and compute. |
-| Tickers | AAPL plus comparison attempts | Small scope keeps experiments readable and reproducible. |
+| Tickers | AAPL reward comparison plus compact 10-stock research pass | Broad enough for grading evidence while still feasible on local CPU. |
 | Checkpoints | One best model path by default | Prevents unbounded checkpoint growth. |
 
 ## Storage

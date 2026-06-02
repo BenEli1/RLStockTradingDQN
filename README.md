@@ -21,7 +21,7 @@ Current local validation after the latest experiment/report pass:
 
 - `ruff check`: passed
 - `ruff format --check`: passed
-- `pytest`: 25 tests passed, coverage above 95%
+- `pytest`: 25 tests passed, 96.07% coverage
 
 ## Run the GUI
 ```powershell
@@ -44,7 +44,12 @@ Actual completed GUI run:
 ![Tkinter dashboard actual run](assets/gui_actual_run.png)
 
 ## Experiment Evidence and Work Report
-We ran compact local experiments to show the pipeline actually works and to document the development struggle honestly. The detailed report is here:
+We ran two types of experiments so the submission is clear and honest:
+
+- A required controlled reward comparison on AAPL, using the assignment's 2020-2023 dataset window.
+- A broader 10-stock research pass to show the same SDK, DQN model, feature pipeline, and backtest logic running across different market sectors.
+
+The controlled reward-comparison report is here:
 
 [results/experiments/REPORT.md](results/experiments/REPORT.md)
 
@@ -57,15 +62,15 @@ Submission-process evidence is also documented:
 - [Cost and resource analysis](docs/COST_ANALYSIS.md)
 - [Version history](docs/VERSION_HISTORY.md)
 
-Summary of the real local run:
+Summary of the controlled reward-comparison run:
 
 | Run | Ticker | Reward | Episodes | DQN Return | Buy/Hold Return | Sharpe | Max Drawdown | Win Rate | Trades |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | AAPL risk-adjusted | AAPL | risk_adjusted | 5 | 1.0678 | 0.8993 | 0.9478 | -0.3035 | 0.4773 | 23 |
 | AAPL basic reward | AAPL | basic | 5 | 2.4318 | 0.8993 | 1.7794 | -0.2356 | 0.3244 | 63 |
-| SPY risk-adjusted | SPY | risk_adjusted | 5 | failed locally | failed locally | failed locally | failed locally | failed locally | failed locally |
+| Initial SPY attempt | SPY | risk_adjusted | 5 | failed locally | failed locally | failed locally | failed locally | failed locally | failed locally |
 
-The initial SPY comparison failed when only `yfinance.download` was available on this machine because yfinance/curl hit a TLS certificate verification problem. The data client was later improved with a secondary Yahoo Chart API fallback, still using Yahoo Finance data, so broader research could run without manual CSV files.
+The initial SPY attempt failed when only `yfinance.download` was available on this machine because yfinance/curl hit a TLS certificate verification problem. The data client was later improved with a secondary Yahoo Chart API fallback, still using Yahoo Finance data, so the broader research pass completed without manual CSV files.
 
 Important conclusion: these short five-episode runs validate the RL pipeline, reward comparison, plotting, checkpointing, and backtest metrics. They are not proof of a profitable trading strategy.
 
@@ -170,9 +175,12 @@ Invalid actions are handled explicitly in `TradingEnv`: `BUY` while already hold
 During backtest and latest-state prediction, the evaluation policy masks impossible actions so the displayed policy is executable. For example, `SELL` is masked when no position is open, and `BUY` is masked while already holding. Training still exposes the agent to invalid-action penalties.
 
 ## Experiments
-Experiment outputs are stored under `results/experiments/`. The committed report includes both successful AAPL runs and the failed SPY attempt.
+Experiment outputs are split by purpose:
 
-Generated files include:
+- `results/experiments/` contains the controlled AAPL reward-comparison run and the earlier historical SPY network-failure attempt.
+- `results/multi_stock/` contains the later completed 10-stock research pass after adding the Yahoo Chart API fallback.
+
+Controlled reward-comparison files include:
 
 - `results/experiments/REPORT.md`
 - `results/experiments/summary.json`
@@ -180,6 +188,9 @@ Generated files include:
 - `results/experiments/<run>/training_curve.png`
 - `results/experiments/<run>/backtest_metrics.json`
 - `results/experiments/<run>/backtest_equity.png`
+- `results/multi_stock/REPORT.md`
+- `results/multi_stock/summary.csv`
+- `results/multi_stock/summary.json`
 
 Large checkpoint files are intentionally ignored by Git.
 

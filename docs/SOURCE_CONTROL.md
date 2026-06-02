@@ -38,5 +38,4 @@ uv run ruff format --check
 uv run pytest --cov=src --cov-report=term-missing
 ```
 
-Latest recorded result: 24 tests passed with 96.60% coverage.
-
+Latest recorded result: 25 tests passed with 96.07% coverage.

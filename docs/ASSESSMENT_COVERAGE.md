@@ -31,10 +31,10 @@ This document maps the Homework 02 requirements and previous-feedback criteria t
 | Source control / version management | Pass | GitHub repo, `docs/SOURCE_CONTROL.md`, `docs/VERSION_HISTORY.md` |
 | Cost/resource awareness | Pass | `docs/COST_ANALYSIS.md` |
 | Extensibility | Pass | README Extension Points, `docs/PLAN.md` |
-| Automated quality standards | Pass | Ruff, pytest, coverage: 24 tests, 96.60% |
+| Automated quality standards | Pass | Ruff, pytest, 25 tests, 96.07% coverage |
 
 ## Still Risky / Manual Review
 
 - Live yfinance calls on this machine can fail because curl cannot verify the local certificate chain. The code now also supports a secondary Yahoo Chart API fallback plus CSV fallback.
 - The experiments are intentionally short five-episode coursework diagnostics. They show pipeline behavior and reward-design effects, not a robust profitable trading strategy.
-- The GUI screenshots in `assets/` are demonstration assets. Real experiment plots are committed under `results/experiments/`.
+- The first GUI screenshot in the README is an actual completed local run. Real experiment plots are committed under `results/experiments/` and `results/multi_stock/`.

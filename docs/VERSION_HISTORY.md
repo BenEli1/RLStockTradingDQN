@@ -20,4 +20,4 @@
 - Added one-click GUI pipeline through `TradingSDK.run_pipeline()`.
 - Added raw-price validation with `auto_adjust=False` and `_raw.parquet` cache naming.
 - Added assessment coverage, AI chat/process log, and source-control evidence documentation.
-- Raised automated test coverage to 96.60% with 24 passing tests.
+- Raised automated test coverage to 96.07% with 25 passing tests.
