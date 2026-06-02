@@ -46,6 +46,9 @@ def draw_dashboard_preview() -> None:
         font=font(15),
         spacing=8,
     )
+    draw.text((44, 692), "Prediction", fill="#111827", font=font(18, True))
+    draw.rounded_rectangle((44, 724, 234, 770), radius=8, fill="#dcfce7", outline="#86efac")
+    draw.text((104, 735), "BUY", fill="#166534", font=font(24, True))
     draw.rectangle((284, 24, 1008, 790), fill="#ffffff", outline="#d0d7de")
     draw.rectangle((1024, 24, 1240, 790), fill="#ffffff", outline="#d0d7de")
     draw.text((1044, 50), "Run Log", fill="#111827", font=font(22, True))

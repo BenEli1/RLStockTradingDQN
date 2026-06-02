@@ -20,6 +20,7 @@ class TraderApp(tk.Tk):
         self.episodes = tk.StringVar(value=str(self.sdk.config["training"]["episodes"]))
         self.status = tk.StringVar(value="Ready")
         self.summary = tk.StringVar(value="No run yet")
+        self.prediction = tk.StringVar(value="No prediction yet")
         self._build()
 
     def _build(self) -> None:
@@ -52,6 +53,20 @@ class TraderApp(tk.Tk):
         ).pack(fill="x", pady=(9, 4))
         ttk.Separator(controls).pack(fill="x", pady=9)
         ttk.Label(controls, textvariable=self.summary, wraplength=170).pack(anchor="w")
+        ttk.Separator(controls).pack(fill="x", pady=9)
+        ttk.Label(controls, text="Prediction").pack(anchor="w")
+        self.prediction_label = tk.Label(
+            controls,
+            textvariable=self.prediction,
+            bg="#ffffff",
+            fg="#6b7280",
+            font=("Segoe UI", 18, "bold"),
+            relief="solid",
+            bd=1,
+            padx=8,
+            pady=8,
+        )
+        self.prediction_label.pack(fill="x", pady=(4, 0))
         dashboard = ttk.Frame(shell, padding=2)
         dashboard.grid(row=0, column=1, sticky="nsew")
         dashboard.columnconfigure(0, weight=1)
@@ -144,6 +159,7 @@ class TraderApp(tk.Tk):
                     f"Feature rows: {len(result.features)}\nSplit sizes: {split_sizes}\n"
                     f"Prediction: {labels[action]}"
                 )
+                self._set_prediction(labels[action])
 
             message = (
                 f"Full pipeline completed: {ticker.upper()} close={first_close:.2f}->{last_close:.2f}, "
@@ -217,10 +233,15 @@ class TraderApp(tk.Tk):
             ordered = sorted(q_values, reverse=True)
             margin = ordered[0] - ordered[1] if len(ordered) > 1 else 0.0
             confidence = "low" if margin < 0.05 else "medium" if margin < 0.15 else "high"
+            label = labels[action]
+
+            def update() -> None:
+                self._set_prediction(label)
+
             return (
                 f"Prediction: {labels[action]} | confidence={confidence} | "
                 f"margin={margin:.4f} | Q-values={q_values}"
-            ), None
+            ), update
 
         self._run(task)
 
@@ -251,6 +272,16 @@ class TraderApp(tk.Tk):
         frame.grid(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=4, pady=4)
         chart = ChartPanel(frame, label)
         return chart
+
+    def _set_prediction(self, label: str) -> None:
+        colors = {
+            "BUY": ("#dcfce7", "#166534"),
+            "HOLD": ("#f3f4f6", "#374151"),
+            "SELL": ("#fee2e2", "#991b1b"),
+        }
+        background, foreground = colors.get(label, ("#ffffff", "#6b7280"))
+        self.prediction.set(label)
+        self.prediction_label.configure(bg=background, fg=foreground)
 
     def _write_log(self, text: str) -> None:
         self.log.insert("end", f"{text}\n")
