@@ -39,6 +39,10 @@ The GUI is the preferred way to demonstrate the project. It includes:
 - One dashboard view with market data, training, and backtest plots visible together.
 - Always-visible run log and status output.
 
+Actual completed GUI run:
+
+![Tkinter dashboard actual run](assets/gui_actual_run.png)
+
 ## Experiment Evidence and Work Report
 We ran compact local experiments to show the pipeline actually works and to document the development struggle honestly. The detailed report is here:
 
@@ -172,17 +176,13 @@ Experiment parameters live in `config/setup.yaml`; rate-limit placeholders live 
 - AAPL experiment results are committed; SPY and a refreshed live AAPL pull failed locally due a yfinance/curl TLS certificate issue and should be rerun on a machine where Yahoo Finance TLS verification succeeds or with valid CSV fallback files.
 - The model is intentionally compact for coursework and CPU feasibility.
 - Replay is regular replay, not prioritized replay.
-- README dashboard images are generated demonstration assets; the real Tkinter GUI was updated to match their styling more closely.
+- The main GUI screenshot is an actual completed local run; the smaller chart images are demo or experiment artifacts as labeled.
 
 ## GUI Guide
 Run `uv run dqn-trader gui`. The Tkinter app allows ticker selection, data preparation, Dueling DQN training, backtesting, and latest-state prediction. Use `Run Full Pipeline` for the clean demo path: it pulls/prepares prices, trains, backtests, predicts the latest action, and updates the market, training, and equity plots in one dashboard. The run log stays visible on the side and records the current stage and rough timing expectations instead of only saying "Running". The GUI delegates all logic to `TradingSDK`, preserving the required architecture.
 
 ## Visual Demonstration
-The dashboard image below is a safe controlled preview generated from the current Tkinter layout. It shows the real control structure, including ticker, episodes, Prepare Data, Train, Backtest, Predict, and Run Full Pipeline. It is not a desktop screenshot, so no personal windows or files are captured.
-
-![Tkinter dashboard preview](assets/gui_dashboard_preview.png)
-
-The next images demonstrate the plot types shown by the GUI. Real experiment plots are shown earlier in the README under the AAPL experiment section.
+The images below demonstrate the plot types shown by the GUI. The actual completed GUI run is shown near the top of the README, and real experiment plots are shown earlier under the AAPL experiment section.
 
 ![Demo market data chart](assets/demo_market_data.png)
 
@@ -190,7 +190,7 @@ The next images demonstrate the plot types shown by the GUI. Real experiment plo
 
 ![Demo backtest equity chart](assets/demo_backtest_equity.png)
 
-To regenerate these README assets:
+To regenerate the demo chart assets:
 
 ```powershell
 uv run python scripts/generate_readme_assets.py

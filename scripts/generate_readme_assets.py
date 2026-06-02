@@ -151,7 +151,6 @@ def draw_demo_plots() -> None:
 
 def main() -> None:
     ASSETS.mkdir(exist_ok=True)
-    draw_dashboard_preview()
     draw_demo_plots()
 
 
